@@ -91,6 +91,24 @@ else ifneq (,$(findstring ios,$(platform)))
    SHARED := -dynamiclib
    PLATFLAGS := -DALIGN_DWORD
 
+ifeq ($(IOSSDK),)
+   IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
+endif
+ifeq ($(platform), ios-arm64)
+  CC = cc -arch arm64 -isysroot $(IOSSDK)
+  CXX = c++ -arch arm64 -isysroot $(IOSSDK)
+else
+  CC = cc -arch armv7 -isysroot $(IOSSDK)
+  CXX = c++ -arch armv7 -isysroot $(IOSSDK)
+endif
+ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
+  CC               += -miphoneos-version-min=8.0
+  CXX              += -miphoneos-version-min=8.0
+else
+  CC               += -miphoneos-version-min=5.0
+  CXX              += -miphoneos-version-min=5.0
+endif
+
 # Nintendo Wii
 else ifeq ($(platform), wii)
    TARGET := $(TARGET_NAME)_libretro_wii.a
