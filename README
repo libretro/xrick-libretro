@@ -20,7 +20,7 @@ have not been successful at contacting Core Design.
 This makes it a bit difficult to formally release the whole code,
 including data for graphics and maps and sounds, under the terms of
 licences such as the GNU General Public Licence. So the code is
-released "in the spirit" of the GNU GPL. Whatever that means.
+released "in the spirit" of the GNU GPL (any version). Whatever that means.
 
 This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
