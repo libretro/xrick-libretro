@@ -159,8 +159,8 @@ void Retro_BlitSurface(SDL_Surface *ss,SDL_Rect* sr,SDL_Surface *ds,SDL_Rect* dr
       {
          for(x=0;x<src.w;x++)
          {
-            if(sBPP==4)res=*pin | (*(pin+1))<<8 | (*(pin+2))<<16 | (*(pin+3))<<24;
-            else if(sBPP==2)res=*pin | (*(pin+1))<<8;
+            if(sBPP==4)res=retro_unaligned32 (pin);
+            else if(sBPP==2)res=retro_unaligned16 (pin);
             else  res=*pin;
             //FIXME 16 to 32 , 8 to 16, 8 to 32 & 32 to 16 . 
             if(sBPP==1 && dBPP==1)
@@ -174,11 +174,8 @@ void Retro_BlitSurface(SDL_Surface *ss,SDL_Rect* sr,SDL_Surface *ds,SDL_Rect* dr
                                   ss->format->palette->colors[*pin].g<<8|\
                                   ss->format->palette->colors[*pin].b;
                //printf("c:%x- ",mcoul);
-               for(w=0;w<dBPP;w++)
-               {
-                  if(mcoul!=key)*pout=(mcoul>>(8*w))&0xff;
-                  pout++;
-               }
+	       retro_unaligned32 (pout) = mcoul;
+	       pout += 4;
                pin++;
             }
             else
@@ -217,11 +214,8 @@ void Retro_BlitSurface(SDL_Surface *ss,SDL_Rect* sr,SDL_Surface *ds,SDL_Rect* dr
                                   ss->format->palette->colors[*pin].g<<8|\
                                   ss->format->palette->colors[*pin].b;
                //printf("c:%x- ",mcoul);
-               for(w=0;w<dBPP;w++)
-               {	
-                  *pout=(mcoul>>(8*w))&0xff;
-                  pout++;
-               }
+	       retro_unaligned32 (pout) = mcoul;
+	       pout += 4;
                pin++;
             }
             else

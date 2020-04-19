@@ -7,6 +7,7 @@
 #include "syssnd.h"
 #include "debug.h"
 #include "data.h"
+#include <retro_endianness.h>
 
 #define SDL_MIX_MAXVOLUME 128
 
@@ -169,7 +170,7 @@ S8 syssnd_play(sound_t *sound, S8 loop)
 
    if (!isAudioActive)
       return -1;
-   if (sound == NULL)
+   if (sound == NULL || sound->buf == NULL)
       return -1;
 
    c = 0;
@@ -302,8 +303,10 @@ sound_t *syssnd_load(char *name)
 
    data_file_read(f, &head, 1, WAV_HEADER_SIZE);
 
-   s->buf=malloc(head.Subchunk2Size);
-   s->len=head.Subchunk2Size;
+   s->len=retro_le_to_cpu32(head.Subchunk2Size);
+   s->buf=malloc(s->len);
+   if (s->buf == NULL)
+     return NULL;
 
    data_file_read(f, s->buf, 1, s->len);
    s->dispose = FALSE;

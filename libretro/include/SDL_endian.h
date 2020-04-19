@@ -1,5 +1,8 @@
 #ifndef SDL_ENDIAN_H
 #define SDL_ENDIAN_H
+
+#include <retro_endianness.h>
+
 //RETRO HACK
 #include "SDL.h"
 
@@ -12,31 +15,16 @@ static INLINE     unsigned SDL_Swap32(unsigned x){
  return result;
 }
 
-//#define SDL_SwapLE16(X) SDL_Swap16(X)
-//#define SDL_SwapLE32(X) SDL_Swap32(X)
+#define SDL_SwapLE16(X)	retro_le_to_cpu16(X)
+#define SDL_SwapLE32(X) retro_le_to_cpu32(X)
 
-#ifdef MSB_FIRST
-
-#define SDL_SwapLE16(X)	SDL_Swap16(X)
-#define SDL_SwapLE32(X) SDL_Swap32(X)
-
-#define SDL_SwapBE16(X) (X)
-#define SDL_SwapBE32(X) (X)
-
-#else
-
-#define SDL_SwapLE16(X)	(X)
-#define SDL_SwapLE32(X) (X)
-
-#define SDL_SwapBE16(X) SDL_Swap16(X)
-#define SDL_SwapBE32(X) SDL_Swap32(X)
-
-#endif
+#define SDL_SwapBE16(X) retro_be_to_cpu16(X)
+#define SDL_SwapBE32(X) retro_be_to_cpu32(X)
 
 #define SDL_LIL_ENDIAN	1234
 #define SDL_BIG_ENDIAN	4321
 
-#ifdef MSB_FIRST
+#if RETRO_IS_BIG_ENDIAN
 #define SDL_BYTEORDER SDL_BIG_ENDIAN
 #else    
 #define SDL_BYTEORDER SDL_LIL_ENDIAN         

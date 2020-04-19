@@ -32,7 +32,9 @@ static char rcsid =
 
 //RETRO HACK
 
-#ifdef MSB_FIRST
+#include <retro_endianness.h>
+
+#if RETRO_IS_BIG_ENDIAN
 #define SDL_BYTEORDER SDL_BIG_ENDIAN
 #else    
 #define SDL_BYTEORDER SDL_LIL_ENDIAN         
