@@ -272,7 +272,7 @@ static uLong unzlocal_SearchCentralDir(RFILE *fin)
    uLong uMaxBack=0xffff; /* maximum size of global comment */
    uLong uPosFound=0;
 
-   if (rfseek(fin,0,SEEK_END) != 0)
+   if (rfseek(fin,0,SEEK_END) < 0)
       return 0;
 
 
@@ -298,7 +298,7 @@ static uLong unzlocal_SearchCentralDir(RFILE *fin)
 
       uReadSize = ((BUFREADCOMMENT+4) < (uSizeFile-uReadPos)) ?
          (BUFREADCOMMENT+4) : (uSizeFile-uReadPos);
-      if (rfseek(fin,uReadPos,SEEK_SET)!=0)
+      if (rfseek(fin,uReadPos,SEEK_SET)<0)
          break;
 
       if (rfread(buf,(uInt)uReadSize,1,fin)!=1)
@@ -357,7 +357,7 @@ unzFile unzOpen (const char *path)
    if (central_pos==0)
       err=UNZ_ERRNO;
 
-   if (rfseek(fin,central_pos,SEEK_SET)!=0)
+   if (rfseek(fin,central_pos,SEEK_SET)<0)
       err=UNZ_ERRNO;
 
    /* the signature, already checked */
@@ -497,7 +497,7 @@ static int unzlocal_GetCurrentFileInfoInternal (
    if (file==NULL)
       return UNZ_PARAMERROR;
    s=(unz_s*)file;
-   if (rfseek(s->file,s->pos_in_central_dir+s->byte_before_the_zipfile,SEEK_SET)!=0)
+   if (rfseek(s->file,s->pos_in_central_dir+s->byte_before_the_zipfile,SEEK_SET)<0)
       err=UNZ_ERRNO;
 
 
@@ -586,7 +586,7 @@ static int unzlocal_GetCurrentFileInfoInternal (
 
       if (lSeek!=0)
       {
-         if (rfseek(s->file,lSeek,SEEK_CUR)==0)
+         if (rfseek(s->file,lSeek,SEEK_CUR)>=0)
             lSeek=0;
          else
             err=UNZ_ERRNO;
@@ -613,7 +613,7 @@ static int unzlocal_GetCurrentFileInfoInternal (
 
       if (lSeek!=0)
       {
-         if (rfseek(s->file,lSeek,SEEK_CUR)==0)
+         if (rfseek(s->file,lSeek,SEEK_CUR)>=0)
             lSeek=0;
          else
             err=UNZ_ERRNO;
@@ -782,7 +782,7 @@ static int unzlocal_CheckCurrentFileCoherencyHeader (
 	*psize_local_extrafield = 0;
 
 	if (rfseek(s->file,s->cur_file_info_internal.offset_curfile +
-								s->byte_before_the_zipfile,SEEK_SET)!=0)
+								s->byte_before_the_zipfile,SEEK_SET)<=0)
 		return UNZ_ERRNO;
 
 
@@ -998,7 +998,7 @@ int unzReadCurrentFile  (unzFile file, void *buf, unsigned len)
 				return UNZ_EOF;
 			if (rfseek(pfile_in_zip_read_info->file,
                       pfile_in_zip_read_info->pos_in_zipfile +
-                         pfile_in_zip_read_info->byte_before_the_zipfile,SEEK_SET)!=0)
+                         pfile_in_zip_read_info->byte_before_the_zipfile,SEEK_SET)<=0)
 				return UNZ_ERRNO;
 			if (rfread(pfile_in_zip_read_info->read_buffer,uReadThis,1,
                          pfile_in_zip_read_info->file)!=1)
