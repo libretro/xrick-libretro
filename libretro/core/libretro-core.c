@@ -225,7 +225,7 @@ void retro_get_system_info(struct retro_system_info *info)
    memset(info, 0, sizeof(*info));
    info->library_name     = "xrick";
    info->library_version  = "021212-Dev";
-   info->valid_extensions = "*|zip";
+   info->valid_extensions = "zip";
    info->need_fullpath    = true;
    info->block_extract    = true;
 }
