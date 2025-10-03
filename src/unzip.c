@@ -782,7 +782,7 @@ static int unzlocal_CheckCurrentFileCoherencyHeader (
 	*psize_local_extrafield = 0;
 
 	if (rfseek(s->file,s->cur_file_info_internal.offset_curfile +
-								s->byte_before_the_zipfile,SEEK_SET)<=0)
+								s->byte_before_the_zipfile,SEEK_SET)<0)
 		return UNZ_ERRNO;
 
 
@@ -998,7 +998,7 @@ int unzReadCurrentFile  (unzFile file, void *buf, unsigned len)
 				return UNZ_EOF;
 			if (rfseek(pfile_in_zip_read_info->file,
                       pfile_in_zip_read_info->pos_in_zipfile +
-                         pfile_in_zip_read_info->byte_before_the_zipfile,SEEK_SET)<=0)
+                         pfile_in_zip_read_info->byte_before_the_zipfile,SEEK_SET)<0)
 				return UNZ_ERRNO;
 			if (rfread(pfile_in_zip_read_info->read_buffer,uReadThis,1,
                          pfile_in_zip_read_info->file)!=1)
