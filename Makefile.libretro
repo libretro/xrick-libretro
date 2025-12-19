@@ -40,7 +40,7 @@ ifeq ($(platform), android)
    SHARED :=  -Wl,--fix-cortex-a8 -llog --shared -Wl,--version-script=$(CORE_DIR)/libretro/core/link.T -Wl,--no-undefined
 
 else ifeq ($(platform), unix)
-   CC = gcc
+   CC ?= gcc
  TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    ifneq ($(findstring SunOS,$(shell uname -a)),)
