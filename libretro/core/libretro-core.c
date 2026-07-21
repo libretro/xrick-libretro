@@ -152,6 +152,67 @@ static void update_variables(bool startup)
 
 static int16_t audio_buf[XRICK_SAMPLES_PER_FRAME * 2];
 
+/*
+ * Hall of fame, as it appears in the save file.
+ *
+ * retro_get_memory_data() used to hand the frontend hscore_t[8] directly, so
+ * the on-disk format was whatever the compiler produced: a native endian U32
+ * score, and two bytes of struct padding per entry - 16 bytes of uninspected
+ * filler in every save file. Scores did not survive moving between a little
+ * and a big endian machine, and a compiler that padded hscore_t differently
+ * would have invalidated existing files.
+ *
+ * The layout is now written out explicitly: 8 entries of 16 bytes, each a
+ * little endian U32 followed by the 10 name bytes and two bytes of defined,
+ * zeroed padding. The 16 byte stride is kept deliberately - on a little
+ * endian host this is byte for byte what the old code produced, so existing
+ * save files load unchanged. Packing to 14 would have been tidier and would
+ * have reset everyone's scores.
+ */
+#define HSCORE_ENTRIES    8
+#define HSCORE_ENTRY_SIZE 16
+#define HSCORE_SRAM_SIZE  (HSCORE_ENTRIES * HSCORE_ENTRY_SIZE)
+
+static uint8_t hscore_sram[HSCORE_SRAM_SIZE];
+static bool    hscore_sram_synced;
+
+static void hscores_encode(void)
+{
+   unsigned i, j;
+
+   memset(hscore_sram, 0, sizeof(hscore_sram));
+
+   for (i = 0; i < HSCORE_ENTRIES; i++)
+   {
+      uint8_t *e = hscore_sram + i * HSCORE_ENTRY_SIZE;
+      uint32_t v = (uint32_t)game_hscores[i].score;
+
+      e[0] = (uint8_t)(v         & 0xff);
+      e[1] = (uint8_t)((v >>  8) & 0xff);
+      e[2] = (uint8_t)((v >> 16) & 0xff);
+      e[3] = (uint8_t)((v >> 24) & 0xff);
+
+      for (j = 0; j < 10; j++)
+         e[4 + j] = (uint8_t)game_hscores[i].name[j];
+   }
+}
+
+static void hscores_decode(void)
+{
+   unsigned i, j;
+
+   for (i = 0; i < HSCORE_ENTRIES; i++)
+   {
+      const uint8_t *e = hscore_sram + i * HSCORE_ENTRY_SIZE;
+
+      game_hscores[i].score = (U32)e[0]        | ((U32)e[1] << 8)
+                            | ((U32)e[2] << 16) | ((U32)e[3] << 24);
+
+      for (j = 0; j < 10; j++)
+         game_hscores[i].name[j] = (U8)e[4 + j];
+   }
+}
+
 void retro_reset(void)
 {
    /* Back to the state retro_load_game() leaves behind, without reloading
@@ -295,9 +356,19 @@ void retro_run(void)
       }
    }
 
+   /* the frontend fills the save RAM buffer after retro_load_game() returns,
+    * so the first frame is the earliest point it can be read back */
+   if (!hscore_sram_synced)
+   {
+      hscores_decode();
+      hscore_sram_synced = true;
+   }
+
    Retro_PollEvent();
 
    game_iterate();
+
+   hscores_encode();
 
    /* One video frame, one batch of audio. Submitted unconditionally: the
     * old 'if (SND == 1)' gate meant a disabled mixer produced zero samples
@@ -372,6 +443,11 @@ bool retro_load_game(const struct retro_game_info *info)
 
    memset(audio_buf, 0, sizeof(audio_buf));
 
+   /* seed the buffer with the defaults; the frontend overwrites it with the
+    * save file, if there is one, once this returns */
+   hscores_encode();
+   hscore_sram_synced = false;
+
    game_resetState();
 
    if (pre_main(RPATH) == -1)
@@ -437,7 +513,7 @@ void *retro_get_memory_data(unsigned id)
    switch (id)
    {
       case RETRO_MEMORY_SAVE_RAM:
-         return (void*)&game_hscores;
+         return (void*)hscore_sram;
       default:
          break;
    }
@@ -450,7 +526,7 @@ size_t retro_get_memory_size(unsigned id)
    switch (id)
    {
       case RETRO_MEMORY_SAVE_RAM:
-         return sizeof(game_hscores);
+         return HSCORE_SRAM_SIZE;
       default:
          break;
    }
