@@ -108,7 +108,8 @@ typedef struct
 	unz_file_info_internal cur_file_info_internal; /* private info about it*/
     file_in_zip_read_info_s* pfile_in_zip_read; /* structure about the current
 	                                    file if we are decompressing it */
-	char *filename;
+	/* borrowed from the caller, never written through or freed here */
+	const char *filename;
 } unz_s;
 
 

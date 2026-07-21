@@ -33,7 +33,11 @@ extern S16 e_rick_stop_x, e_rick_stop_y;
 #define E_RICK_STCRAWL 0x40
 
 #define E_RICK_STSET(X) e_rick_state |= (X)
-#define E_RICK_STRST(X) e_rick_state &= ~(X)
+/* the cast keeps the complement in the width of e_rick_state; without it
+ * ~(X) is an int and E_RICK_STRST(0xff) becomes 'state &= -256', which is
+ * correct - it clears every bit - but warns under -Woverflow because the
+ * result provably truncates to zero */
+#define E_RICK_STRST(X) e_rick_state &= (U8)~(X)
 #define E_RICK_STTST(X) (e_rick_state & (X))
 
 extern void e_rick_save(void);
