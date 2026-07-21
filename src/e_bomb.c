@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "ents.h"
@@ -157,6 +158,14 @@ void e_bomb_reset(void)
   e_bomb_xc     = 0;
   e_bomb_yc     = 0;
   e_bomb_ticker = 0;
+}
+
+void e_bomb_serialize(serial_t *s)
+{
+  serial_u8(s, &e_bomb_lethal);
+  serial_u8(s, &e_bomb_xc);
+  serial_u16(s, &e_bomb_yc);
+  serial_u8(s, &e_bomb_ticker);
 }
 
 /* eof */

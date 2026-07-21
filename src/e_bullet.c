@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "ents.h"
@@ -83,6 +84,13 @@ void e_bullet_reset(void)
   e_bullet_offsx = 0;
   e_bullet_xc    = 0;
   e_bullet_yc    = 0;
+}
+
+void e_bullet_serialize(serial_t *s)
+{
+  serial_s8(s, &e_bullet_offsx);
+  serial_s16(s, &e_bullet_xc);
+  serial_s16(s, &e_bullet_yc);
 }
 
 /* eof */

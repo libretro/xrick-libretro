@@ -14,6 +14,8 @@
 #ifndef _E_RICK_H
 #define _E_RICK_H
 
+#include "state.h"
+
 #include "system.h"
 
 #define E_RICK_NO 1
@@ -41,6 +43,8 @@ extern void e_rick_gozombie(void);
 extern U8 e_rick_boxtest(U8);
 
 extern void e_rick_reset(void);
+
+extern void e_rick_serialize(serial_t *s);
 
 #endif
 

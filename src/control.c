@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "config.h"
 #include "system.h"
 #include "game.h"
@@ -27,6 +28,13 @@ void control_reset(void)
   control_status = 0;
   control_last   = 0;
   control_active = TRUE;
+}
+
+void control_serialize(serial_t *s)
+{
+  serial_u8(s, &control_status);
+  serial_u8(s, &control_last);
+  serial_u8(s, &control_active);
 }
 
 /* eof */

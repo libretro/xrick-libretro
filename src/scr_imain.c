@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include <stdio.h>  /* sprintf */
 
 #include "system.h"
@@ -173,6 +174,15 @@ screen_introMain(void)
   }
   else
     return SCREEN_RUNNING;
+}
+
+void scr_imain_serialize(serial_t *s)
+{
+  serial_u8(s, &seq);
+  serial_u8(s, &seen);
+  serial_u8(s, &first);
+  serial_u8(s, &period);
+  serial_u32(s, &tm);
 }
 
 /* eof */

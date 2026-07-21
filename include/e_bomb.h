@@ -14,6 +14,8 @@
 #ifndef _E_BOMB_H
 #define _E_BOMB_H
 
+#include "state.h"
+
 #include "system.h"
 
 #define E_BOMB_NO 3
@@ -30,6 +32,8 @@ extern void e_bomb_init(U16, U16);
 extern void e_bomb_action(U8);
 
 extern void e_bomb_reset(void);
+
+extern void e_bomb_serialize(serial_t *s);
 
 #endif
 

@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "screens.h"
@@ -78,6 +79,12 @@ screen_xrick(void)
 	}
 
 	return SCREEN_RUNNING;
+}
+
+void scr_xrick_serialize(serial_t *s)
+{
+  serial_u8(s, &seq);
+  serial_u8(s, &wait);
 }
 
 /* eof */

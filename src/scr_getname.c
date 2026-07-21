@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include <string.h>
 #include "system.h"
 #include "game.h"
@@ -25,6 +26,7 @@
 static U8 seq = 0;
 static U8 x, y, p;
 static U8 name[10];
+static U32 getname_tm = 0;
 
 #define TILE_POINTER '\072'
 #define TILE_CURSOR '\073'
@@ -51,7 +53,6 @@ static void name_draw(void);
 U8
 screen_getname(void)
 {
-  static U32 tm = 0;
   U8 i, j;
 
   if (seq == 0) {
@@ -112,7 +113,7 @@ screen_getname(void)
 	pointer_show(FALSE);
 	y--;
 	pointer_show(TRUE);
-	tm = sys_gettime();
+	getname_tm = sys_gettime();
       }
       seq = 4;
     }
@@ -121,7 +122,7 @@ screen_getname(void)
 	pointer_show(FALSE);
 	y++;
 	pointer_show(TRUE);
-	tm = sys_gettime();
+	getname_tm = sys_gettime();
       }
       seq = 5;
     }
@@ -130,7 +131,7 @@ screen_getname(void)
 	pointer_show(FALSE);
 	x--;
 	pointer_show(TRUE);
-	tm = sys_gettime();
+	getname_tm = sys_gettime();
       }
       seq = 6;
     }
@@ -139,7 +140,7 @@ screen_getname(void)
 	pointer_show(FALSE);
 	x++;
 	pointer_show(TRUE);
-	tm = sys_gettime();
+	getname_tm = sys_gettime();
       }
       seq = 7;
     }
@@ -173,25 +174,25 @@ screen_getname(void)
 
   case 4:  /* wait for UP released */
     if (!(control_status & CONTROL_UP) ||
-	sys_gettime() - tm > AUTOREPEAT_TMOUT)
+	sys_gettime() - getname_tm > AUTOREPEAT_TMOUT)
       seq = 2;
     break;
 
   case 5:  /* wait for DOWN released */
     if (!(control_status & CONTROL_DOWN) ||
-	sys_gettime() - tm > AUTOREPEAT_TMOUT)
+	sys_gettime() - getname_tm > AUTOREPEAT_TMOUT)
       seq = 2;
     break;
 
   case 6:  /* wait for LEFT released */
     if (!(control_status & CONTROL_LEFT) ||
-	sys_gettime() - tm > AUTOREPEAT_TMOUT)
+	sys_gettime() - getname_tm > AUTOREPEAT_TMOUT)
       seq = 2;
     break;
 
   case 7:  /* wait for RIGHT released */
     if (!(control_status & CONTROL_RIGHT) ||
-	sys_gettime() - tm > AUTOREPEAT_TMOUT)
+	sys_gettime() - getname_tm > AUTOREPEAT_TMOUT)
       seq = 2;
     break;
 
@@ -269,6 +270,17 @@ void scr_getname_reset(void)
   seq = 0;
   x = y = p = 0;
   memset(name, 0, sizeof(name));
+  getname_tm = 0;
+}
+
+void scr_getname_serialize(serial_t *s)
+{
+  serial_u8(s, &seq);
+  serial_u8(s, &x);
+  serial_u8(s, &y);
+  serial_u8(s, &p);
+  serial_bytes(s, name, sizeof(name));
+  serial_u32(s, &getname_tm);
 }
 
 /* eof */

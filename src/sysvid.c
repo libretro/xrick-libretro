@@ -16,6 +16,8 @@
 
 #include "libretro-core.h"
 
+#include "state.h"
+
 #include "system.h"
 #include "game.h"
 #include "img.h"
@@ -29,6 +31,10 @@ U8 *sysvid_fb = NULL; /* frame buffer */
 
 /* the palette, pre-packed into the frontend's pixel format */
 static PIXEL_TYPE palette[256];
+
+/* ...and the unpacked source, kept so a savestate can carry the palette
+ * without baking in whichever pixel format this build happens to use */
+static img_color_t palette_rgb[256];
 
 /*
  * The 8bpp shadow of what is currently on screen.
@@ -102,7 +108,10 @@ void sysvid_setPalette(img_color_t *pal, U16 n)
    PIXEL_TYPE *q;
 
    for (i = 0; i < n; i++)
-      palette[i] = sysvid_pack(pal[i].r, pal[i].g, pal[i].b);
+   {
+      palette_rgb[i] = pal[i];
+      palette[i]     = sysvid_pack(pal[i].r, pal[i].g, pal[i].b);
+   }
 
    /* The palette is baked into the pixels as they are expanded, so changing
     * it invalidates every pixel already in the frontend buffer, including
@@ -167,6 +176,7 @@ void sysvid_shutdown(void)
    shadow = NULL;
 
    memset(palette, 0, sizeof(palette));
+   memset(palette_rgb, 0, sizeof(palette_rgb));
 }
 
 /*
@@ -229,3 +239,55 @@ void sysvid_clear(void)
 {
    memset(sysvid_fb, 0, SYSVID_WIDTH * SYSVID_HEIGHT);
 }
+
+/*
+ * Repaint the whole frontend buffer from the shadow.
+ */
+static void sysvid_repaint(void)
+{
+   U16 x, y;
+   const U8 *p;
+   PIXEL_TYPE *q;
+
+   if (!shadow)
+      return;
+
+   p = shadow;
+   q = Retro_Screen;
+   for (y = 0; y < SYSVID_HEIGHT; y++)
+   {
+      for (x = 0; x < SYSVID_WIDTH; x++)
+         q[x] = palette[p[x]];
+      p += SYSVID_WIDTH;
+      q += WINDOW_WIDTH;
+   }
+}
+
+void sysvid_serialize(serial_t *s)
+{
+   U16 i;
+
+   if (sysvid_fb)
+      serial_bytes(s, sysvid_fb, SYSVID_WIDTH * SYSVID_HEIGHT);
+   if (shadow)
+      serial_bytes(s, shadow, SYSVID_WIDTH * SYSVID_HEIGHT);
+
+   /* the palette travels unpacked, so a state written by an RGB565 build
+    * still loads into an XRGB8888 one */
+   for (i = 0; i < 256; i++)
+   {
+      serial_u8(s, &palette_rgb[i].r);
+      serial_u8(s, &palette_rgb[i].g);
+      serial_u8(s, &palette_rgb[i].b);
+   }
+
+   if (!s->saving)
+   {
+      for (i = 0; i < 256; i++)
+         palette[i] = sysvid_pack(palette_rgb[i].r, palette_rgb[i].g,
+                                  palette_rgb[i].b);
+      sysvid_repaint();
+   }
+}
+
+/* eof */

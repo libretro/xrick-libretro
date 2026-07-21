@@ -28,6 +28,7 @@
  * to map_map.
  */
 
+#include "state.h"
 #include <string.h>
 #include "system.h"
 #include "game.h"
@@ -192,6 +193,20 @@ void maps_reset(void)
   memset(map_map, 0, sizeof(map_map));
   memset(map_eflg, 0, sizeof(map_eflg));
   map_frow = 0;
+}
+
+void maps_serialize(serial_t *s)
+{
+  U16 i;
+
+  serial_bytes(s, map_map, sizeof(map_map));
+  serial_bytes(s, map_eflg, sizeof(map_eflg));
+  serial_u8(s, &map_frow);
+
+  /* map_marks is a statically initialised table that play mutates in place,
+   * so the mutable field has to travel with the state */
+  for (i = 0; i < MAP_NBR_MARKS; i++)
+    serial_u8(s, &map_marks[i].ent);
 }
 
 /* eof */

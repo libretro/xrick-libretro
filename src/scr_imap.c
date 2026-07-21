@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "screens.h"
@@ -300,6 +301,22 @@ void scr_imap_reset(void)
   spx = spdx = spy = spdy = 0;
   spbase = spoffs = 0;
   seq = 0;
+}
+
+void scr_imap_serialize(serial_t *s)
+{
+  serial_u16(s, &step);
+  serial_u16(s, &count);
+  serial_u16(s, &run);
+  serial_u8(s, &flipflop);
+  serial_u16(s, &spnum);
+  serial_u16(s, &spx);
+  serial_u16(s, &spdx);
+  serial_u16(s, &spy);
+  serial_u16(s, &spdy);
+  serial_u16(s, &spbase);
+  serial_u16(s, &spoffs);
+  serial_u8(s, &seq);
 }
 
 /* eof */

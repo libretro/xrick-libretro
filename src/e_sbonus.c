@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "ents.h"
@@ -92,6 +93,13 @@ void e_sbonus_reset(void)
   e_sbonus_counting = FALSE;
   e_sbonus_counter  = 0;
   e_sbonus_bonus    = 0;
+}
+
+void e_sbonus_serialize(serial_t *s)
+{
+  serial_u8(s, &e_sbonus_counting);
+  serial_u8(s, &e_sbonus_counter);
+  serial_u16(s, &e_sbonus_bonus);
 }
 
 /* eof */

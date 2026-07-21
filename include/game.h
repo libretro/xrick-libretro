@@ -17,6 +17,7 @@
 #include <stddef.h> /* NULL */
 
 #include "system.h"
+#include "state.h"
 #include "config.h"
 
 #include "rects.h"
@@ -105,6 +106,8 @@ extern sound_t *WAV_ENTITY[];
 #endif
 
 extern void game_resetState(void);
+
+extern void game_serialize(serial_t *s);
 
 #endif
 

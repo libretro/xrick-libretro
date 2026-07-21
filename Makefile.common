@@ -35,6 +35,7 @@ SOURCES_C := \
 	$(CORE_DIR)/src/e_bonus.c \
 	$(CORE_DIR)/src/e_box.c \
 	$(CORE_DIR)/src/rects.c \
+	$(CORE_DIR)/src/state.c \
 	$(CORE_DIR)/src/util.c \
 	$(CORE_DIR)/src/game.c \
 	$(CORE_DIR)/src/xrick.c \

@@ -1,5 +1,6 @@
 #include "libretro.h"
 #include "libretro-core.h"
+#include "state.h"
 
 
  
@@ -38,6 +39,12 @@ uint32_t Retro_Screen[WINDOW_WIDTH*WINDOW_HEIGHT];
 //KEYBOARD
 char Key_Sate[512];
 char Key_Sate2[512];
+
+/* Edge detection latches for the two action buttons. These used to be
+ * function statics; they are session state like Key_Sate2 and have to be
+ * resettable and serialisable. */
+static bool fire_gun_pressed_prev     = false;
+static bool set_dynamite_pressed_prev = false;
 
 static retro_input_state_t input_state_cb;
 static retro_input_poll_t input_poll_cb;
@@ -112,8 +119,38 @@ void texture_uninit(void)
 void texture_init(void)
 {
    memset(Retro_Screen, 0, sizeof(Retro_Screen));
+   input_reset();
+}
+
+void input_reset(void)
+{
    memset(Key_Sate,  0, sizeof(Key_Sate));
    memset(Key_Sate2, 0, sizeof(Key_Sate2));
+   fire_gun_pressed_prev     = false;
+   set_dynamite_pressed_prev = false;
+}
+
+/*
+ * The input layer is edge triggered: Key_Sate2 and the two _prev flags hold
+ * what the previous frame saw, and the game only reacts to changes. Restoring
+ * a state without them leaves the latches describing a frame that, from the
+ * restored game's point of view, never happened - so the very next poll
+ * synthesises or swallows a key transition and the run diverges immediately.
+ */
+void input_serialize(serial_t *s)
+{
+   U8 t;
+
+   serial_bytes(s, Key_Sate,  sizeof(Key_Sate));
+   serial_bytes(s, Key_Sate2, sizeof(Key_Sate2));
+
+   t = (U8)fire_gun_pressed_prev;
+   serial_u8(s, &t);
+   if (!s->saving) fire_gun_pressed_prev = t ? true : false;
+
+   t = (U8)set_dynamite_pressed_prev;
+   serial_u8(s, &t);
+   if (!s->saving) set_dynamite_pressed_prev = t ? true : false;
 }
 
 static void retro_key_down(unsigned short key)
@@ -226,8 +263,6 @@ int Retro_PollEvent(void)
     * will not register correctly unless a directional
     * input is triggered on the frame *after* the fire
     * button is triggered */
-   static bool fire_gun_pressed_prev     = false;
-   static bool set_dynamite_pressed_prev = false;
 
    input_poll_cb();
 

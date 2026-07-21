@@ -16,6 +16,7 @@
 #include "system.h"
 #include "config.h"
 #include "game.h"
+#include "state.h"
 
 #include "draw.h"
 #include "maps.h"
@@ -798,12 +799,46 @@ void game_resetState(void)
   scr_xrick_reset();
   scr_imain_reset();
   scr_getname_reset();
+  scr_gameover_reset();
   scr_imap_reset();
   e_rick_reset();
   e_them_reset();
   e_bomb_reset();
   e_bullet_reset();
   e_sbonus_reset();
+}
+
+void game_serialize(serial_t *s)
+{
+  U32 st = (U32)game_state;
+
+  serial_u32(s, &st);
+  if (!s->saving)
+    game_state = (game_state_t)st;
+
+  serial_u8(s, &game_period);
+  serial_u8(s, &game_waitevt);
+  serial_u8(s, &game_lives);
+  serial_u8(s, &game_bombs);
+  serial_u8(s, &game_bullets);
+  serial_u32(s, &game_score);
+  serial_u16(s, &game_map);
+  serial_u16(s, &game_submap);
+  serial_u8(s, &game_dir);
+  serial_u8(s, &game_chsm);
+  serial_u8(s, &game_cheat1);
+  serial_u8(s, &game_cheat2);
+  serial_u8(s, &game_cheat3);
+  serial_u8(s, &isave_frow);
+
+  if (!s->saving)
+  {
+    /* game_rects is a pointer into a list that is rebuilt every frame, so it
+     * can not travel in the state. sysvid_serialize() has already repainted
+     * the whole screen, so there is nothing outstanding to draw. */
+    game_rects = NULL;
+    draw_STATUSRECT.next = NULL;
+  }
 }
 
 /* eof */

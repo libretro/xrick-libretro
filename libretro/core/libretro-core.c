@@ -8,6 +8,7 @@
 #endif
 
 #include "libretro-core.h"
+#include "state.h"
 #include "libretro_core_options.h"
 
 #include "game.h"
@@ -400,17 +401,21 @@ bool retro_load_game_special(unsigned type, const struct retro_game_info *info, 
 
 size_t retro_serialize_size(void)
 {
-   return 0;
+   return (size_t)state_size();
 }
 
 bool retro_serialize(void *data_, size_t size)
 {
-   return false;
+   if (!data_ || size < (size_t)state_size())
+      return false;
+   return state_save(data_, (uint32_t)size) == 0;
 }
 
 bool retro_unserialize(const void *data_, size_t size)
 {
-   return false;
+   if (!data_ || size < (size_t)state_size())
+      return false;
+   return state_load(data_, (uint32_t)size) == 0;
 }
 
 void *retro_get_memory_data(unsigned id)

@@ -14,6 +14,8 @@
 #ifndef _E_BULLET_H
 #define _E_BULLET_H
 
+#include "state.h"
+
 #include "system.h"
 
 #define E_BULLET_NO 2
@@ -26,6 +28,8 @@ extern void e_bullet_init(U16, U16);
 extern void e_bullet_action(U8);
 
 extern void e_bullet_reset(void);
+
+extern void e_bullet_serialize(serial_t *s);
 
 #endif
 

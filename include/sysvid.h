@@ -15,8 +15,11 @@
 #define _VIDEOEX_H
 
 #include "system.h"
+#include "state.h"
 
 extern U8 *sysvid_fb;  /* frame buffer */
+
+extern void sysvid_serialize(serial_t *s);
 
 #endif
 

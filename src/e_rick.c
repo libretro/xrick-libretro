@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "config.h"
 #include "game.h"
@@ -43,6 +44,7 @@ static S16 offsy;
 
 static U8 seq;
 
+static U8 stopped = FALSE; /* is this the most elegant way? */
 static U8 save_crawl;
 static U16 save_x, save_y;
 
@@ -446,7 +448,6 @@ e_rick_action2(void)
  */
 void e_rick_action(UNUSED(U8 e))
 {
-	static U8 stopped = FALSE; /* is this the most elegant way? */
 
 	e_rick_action2();
 
@@ -578,8 +579,26 @@ void e_rick_reset(void)
   offsy         = 0;
   seq           = 0;
   save_crawl    = 0;
+  stopped       = FALSE;
   save_x        = 0;
   save_y        = 0;
+}
+
+void e_rick_serialize(serial_t *s)
+{
+  serial_s16(s, &e_rick_stop_x);
+  serial_s16(s, &e_rick_stop_y);
+  serial_u8(s, &e_rick_state);
+  serial_u8(s, &scrawl);
+  serial_u8(s, &trigger);
+  serial_s8(s, &offsx);
+  serial_u8(s, &ylow);
+  serial_s16(s, &offsy);
+  serial_u8(s, &seq);
+  serial_u8(s, &stopped);
+  serial_u8(s, &save_crawl);
+  serial_u16(s, &save_x);
+  serial_u16(s, &save_y);
 }
 
 /* eof */

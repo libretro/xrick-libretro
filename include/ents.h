@@ -14,6 +14,8 @@
 #ifndef _ENTS_H
 #define _ENTS_H
 
+#include "state.h"
+
 #include "system.h"
 #include "rects.h"
 
@@ -109,6 +111,8 @@ extern void ent_clprev(void);
 extern void ent_action(void);
 
 extern void ents_reset(void);
+
+extern void ents_serialize(serial_t *s);
 
 #endif
 

@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -36,6 +37,7 @@
  */
 ent_t ent_ents[ENT_ENTSNUM + 1];
 rect_t *ent_rects = NULL;
+static U8 ent_ch3 = FALSE;
 
 
 /*
@@ -329,7 +331,6 @@ ent_draw(void)
 {
   U8 i;
 #ifdef ENABLE_CHEATS
-  static U8 ch3 = FALSE;
 #endif
   S16 dx, dy;
 
@@ -344,7 +345,7 @@ ent_draw(void)
    */
   for (i = 0; ent_ents[i].n != 0xff; i++) {
 #ifdef ENABLE_CHEATS
-    if (ent_ents[i].prev_n && (ch3 || ent_ents[i].prev_s))
+    if (ent_ents[i].prev_n && (ent_ch3 || ent_ents[i].prev_s))
 #else
     if (ent_ents[i].prev_n && ent_ents[i].prev_s)
 #endif
@@ -377,7 +378,7 @@ ent_draw(void)
    */
   for (i = 0; ent_ents[i].n != 0xff; i++) {
 #ifdef ENABLE_CHEATS
-    if (ent_ents[i].prev_n && (ch3 || ent_ents[i].prev_s)) {
+    if (ent_ents[i].prev_n && (ent_ch3 || ent_ents[i].prev_s)) {
 #else
     if (ent_ents[i].prev_n && ent_ents[i].prev_s) {
 #endif
@@ -428,7 +429,7 @@ ent_draw(void)
   }
 
 #ifdef ENABLE_CHEATS
-  ch3 = game_cheat3;
+  ent_ch3 = game_cheat3;
 #endif
 }
 
@@ -508,6 +509,44 @@ ent_action(void)
 void ents_reset(void)
 {
   memset(ent_ents, 0, sizeof(ent_ents));
+  ent_ch3 = FALSE;
+}
+
+void ents_serialize(serial_t *s)
+{
+  U8 e;
+
+  serial_u8(s, &ent_ch3);
+
+  for (e = 0; e < ENT_ENTSNUM + 1; e++)
+  {
+    serial_u8(s,  &ent_ents[e].n);
+    serial_s16(s, &ent_ents[e].x);
+    serial_s16(s, &ent_ents[e].y);
+    serial_u8(s,  &ent_ents[e].sprite);
+    serial_u8(s,  &ent_ents[e].w);
+    serial_u8(s,  &ent_ents[e].h);
+    serial_u16(s, &ent_ents[e].mark);
+    serial_u8(s,  &ent_ents[e].flags);
+    serial_s16(s, &ent_ents[e].trig_x);
+    serial_s16(s, &ent_ents[e].trig_y);
+    serial_s16(s, &ent_ents[e].xsave);
+    serial_s16(s, &ent_ents[e].ysave);
+    serial_u16(s, &ent_ents[e].sprbase);
+    serial_u16(s, &ent_ents[e].step_no_i);
+    serial_u16(s, &ent_ents[e].step_no);
+    serial_s16(s, &ent_ents[e].c1);
+    serial_s16(s, &ent_ents[e].c2);
+    serial_u8(s,  &ent_ents[e].ylow);
+    serial_s16(s, &ent_ents[e].offsy);
+    serial_u8(s,  &ent_ents[e].latency);
+    serial_u8(s,  &ent_ents[e].prev_n);
+    serial_s16(s, &ent_ents[e].prev_x);
+    serial_s16(s, &ent_ents[e].prev_y);
+    serial_u8(s,  &ent_ents[e].prev_s);
+    serial_u8(s,  &ent_ents[e].front);
+    serial_u8(s,  &ent_ents[e].trigsnd);
+  }
 }
 
 /* eof */

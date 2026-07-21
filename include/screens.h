@@ -14,6 +14,8 @@
 #ifndef _SCREENS_H
 #define _SCREENS_H
 
+#include "state.h"
+
 #include "system.h"
 
 #define SCREEN_TIMEOUT 4000
@@ -49,6 +51,17 @@ extern void scr_xrick_reset(void);
 extern void scr_imain_reset(void);
 extern void scr_getname_reset(void);
 extern void scr_imap_reset(void);
+
+extern void scr_xrick_serialize(serial_t *s);
+
+extern void scr_imain_serialize(serial_t *s);
+
+extern void scr_imap_serialize(serial_t *s);
+
+extern void scr_getname_serialize(serial_t *s);
+
+extern void scr_gameover_reset(void);
+extern void scr_gameover_serialize(serial_t *s);
 
 #endif
 

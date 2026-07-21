@@ -43,6 +43,7 @@
  * of rows of 0x20 tiles of 0x08 by 0x08 pixels.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "draw.h"
@@ -690,6 +691,14 @@ void draw_reset(void)
   fb             = NULL;
 #ifdef GFXPC
   draw_filter    = 0xffff;
+#endif
+}
+
+void draw_serialize(serial_t *s)
+{
+  serial_u8(s, &draw_tilesBank);
+#ifdef GFXPC
+  serial_u16(s, &draw_filter);
 #endif
 }
 

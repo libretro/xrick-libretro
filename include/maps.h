@@ -14,6 +14,8 @@
 #ifndef _MAPS_H
 #define _MAPS_H
 
+#include "state.h"
+
 #include "system.h"
 
 #define MAP_NBR_MAPS 0x05
@@ -146,6 +148,8 @@ extern U8 map_chain(void);
 extern void map_resetMarks(void);
 
 extern void maps_reset(void);
+
+extern void maps_serialize(serial_t *s);
 
 #endif
 

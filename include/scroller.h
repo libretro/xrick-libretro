@@ -14,6 +14,8 @@
 #ifndef _SCROLLER_H
 #define _SCROLLER_H
 
+#include "state.h"
+
 #define SCROLL_RUNNING 1
 #define SCROLL_DONE 0
 
@@ -23,6 +25,8 @@ extern U8 scroll_up(void);
 extern U8 scroll_down(void);
 
 extern void scroller_reset(void);
+
+extern void scroller_serialize(serial_t *s);
 
 #endif
 

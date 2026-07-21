@@ -14,6 +14,8 @@
 #ifndef _E_SBONUS_H
 #define _E_SBONUS_H
 
+#include "state.h"
+
 #include "system.h"
 
 extern U8 e_sbonus_counting;
@@ -24,6 +26,8 @@ extern void e_sbonus_start(U8);
 extern void e_sbonus_stop(U8);
 
 extern void e_sbonus_reset(void);
+
+extern void e_sbonus_serialize(serial_t *s);
 
 #endif
 

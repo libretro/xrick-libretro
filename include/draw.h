@@ -14,6 +14,8 @@
 #ifndef _DRAW_H
 #define _DRAW_H
 
+#include "state.h"
+
 #include "system.h"
 
 #include "rects.h"
@@ -50,6 +52,8 @@ extern void draw_infos(void);
 extern void draw_img(img_t *);
 
 extern void draw_reset(void);
+
+extern void draw_serialize(serial_t *s);
 
 #endif
 

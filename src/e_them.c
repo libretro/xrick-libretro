@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "system.h"
 #include "game.h"
 #include "ents.h"
@@ -726,6 +727,12 @@ void e_them_reset(void)
 {
   e_them_rndseed = 0;
   e_them_rndnbr  = 0;
+}
+
+void e_them_serialize(serial_t *s)
+{
+  serial_u32(s, &e_them_rndseed);
+  serial_u16(s, &e_them_rndnbr);
 }
 
 /* eof */

@@ -14,6 +14,8 @@
 #ifndef _CONTROL_H
 #define _CONTROL_H
 
+#include "state.h"
+
 #define CONTROL_UP 0x08
 #define CONTROL_DOWN 0x04
 #define CONTROL_LEFT 0x02
@@ -28,6 +30,8 @@ extern U8 control_last;
 extern U8 control_active;
 
 extern void control_reset(void);
+
+extern void control_serialize(serial_t *s);
 
 #endif
 

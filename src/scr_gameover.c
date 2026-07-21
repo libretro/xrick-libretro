@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include "stddef.h" /* NULL */
 
 #include "system.h"
@@ -25,17 +26,40 @@
  *
  * return: SCREEN_RUNNING, SCREEN_DONE, SCREEN_EXIT
  */
+static U8 seq = 0;
+static U8 period = 0;
+static U32 tm = 0;
+static sound_t *snd;
+static U8 chan;
+
+/*
+ * Reset to the state a fresh session expects.
+ */
+void scr_gameover_reset(void)
+{
+	seq = 0;
+	period = 0;
+	tm = 0;
+	snd = NULL;
+	chan = 0;
+}
+
+void scr_gameover_serialize(serial_t *s)
+{
+	serial_u8(s, &seq);
+	serial_u8(s, &period);
+	serial_u32(s, &tm);
+	serial_u8(s, &chan);
+	/* snd points at a cached sound owned by game.c; it is re-established by
+	 * the sequence itself and deliberately not carried in the state */
+}
+
 U8
 screen_gameover(void)
 {
-	static U8 seq = 0;
-	static U8 period = 0;
 #ifdef GFXST
-	static U32 tm = 0;
 #endif
 #ifdef ENABLE_SOUND
-	static sound_t *snd;
-	static U8 chan;
 #endif
 
 	if (seq == 0) {

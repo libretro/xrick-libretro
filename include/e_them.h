@@ -14,6 +14,8 @@
 #ifndef _E_THEM_H
 #define _E_THEM_H
 
+#include "state.h"
+
 #include "system.h"
 
 extern U32 e_them_rndseed;
@@ -25,6 +27,8 @@ extern void e_them_t3_action(U8);
 extern void e_them_z_action(U8);
 
 extern void e_them_reset(void);
+
+extern void e_them_serialize(serial_t *s);
 
 #endif
 

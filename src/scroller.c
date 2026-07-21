@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include "state.h"
 #include <stdlib.h>
 
 #include "system.h"
@@ -23,6 +24,8 @@
 #include "ents.h"
 
 static U8 period;
+static U8 scroll_up_n = 0;
+static U8 scroll_down_n = 0;
 
 /*
  * Scroll up
@@ -32,17 +35,16 @@ U8
 scroll_up(void)
 {
   U8 i, j;
-  static U8 n = 0;
 
   /* last call: restore */
-  if (n == 8) {
-    n = 0;
+  if (scroll_up_n == 8) {
+    scroll_up_n = 0;
     game_period = period;
     return SCROLL_DONE;
   }
 
   /* first call: prepare */
-  if (n == 0) {
+  if (scroll_up_n == 0) {
     period = game_period;
     game_period = SCROLL_PERIOD;
   }
@@ -71,7 +73,7 @@ scroll_up(void)
   map_frow++;
 
   /* loop */
-  if (n++ == 7) {
+  if (scroll_up_n++ == 7) {
     /* activate visible entities */
     ent_actvis(map_frow + MAP_ROW_HBTOP, map_frow + MAP_ROW_HBBOT);
 
@@ -97,17 +99,16 @@ U8
 scroll_down(void)
 {
   U8 i, j;
-  static U8 n = 0;
 
   /* last call: restore */
-  if (n == 8) {
-    n = 0;
+  if (scroll_down_n == 8) {
+    scroll_down_n = 0;
     game_period = period;
     return SCROLL_DONE;
   }
 
   /* first call: prepare */
-  if (n == 0) {
+  if (scroll_down_n == 0) {
     period = game_period;
     game_period = SCROLL_PERIOD;
   }
@@ -136,7 +137,7 @@ scroll_down(void)
   map_frow--;
 
   /* loop */
-  if (n++ == 7) {
+  if (scroll_down_n++ == 7) {
     /* activate visible entities */
     ent_actvis(map_frow + MAP_ROW_HTTOP, map_frow + MAP_ROW_HTBOT);
 
@@ -159,7 +160,18 @@ scroll_down(void)
  */
 void scroller_reset(void)
 {
-  period = 0;
+  period        = 0;
+  scroll_up_n   = 0;
+  scroll_down_n = 0;
+}
+
+/* eof */
+
+void scroller_serialize(serial_t *s)
+{
+  serial_u8(s, &period);
+  serial_u8(s, &scroll_up_n);
+  serial_u8(s, &scroll_down_n);
 }
 
 /* eof */
