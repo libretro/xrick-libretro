@@ -94,9 +94,11 @@ static void
 end_channel(U8 c)
 {
 	channel[c].loop = 0;
-	if (channel[c].snd->dispose)
+	if (channel[c].snd && channel[c].snd->dispose)
 		syssnd_free(channel[c].snd);
 	channel[c].snd = NULL;
+	channel[c].buf = NULL;
+	channel[c].len = 0;
 }
 
 
@@ -111,7 +113,12 @@ void syssnd_init(void)
    }
 
    for (c = 0; c < SYSSND_MIXCHANNELS; c++)
+   {
       channel[c].loop = 0;  /* deactivate */
+      channel[c].snd  = NULL;
+      channel[c].buf  = NULL;
+      channel[c].len  = 0;
+   }
 
    isAudioActive = TRUE;
 
@@ -163,19 +170,30 @@ void syssnd_vol(S8 d)
 S8 syssnd_play(sound_t *sound, S8 loop)
 {
    S8 c;
+   U8 i;
 
    if (!isAudioActive)
       return -1;
    if (sound == NULL || sound->buf == NULL)
       return -1;
 
-   c = 0;
-   while ((channel[c].snd != sound || channel[c].loop == 0) &&
-         channel[c].loop != 0 &&
-         c < SYSSND_MIXCHANNELS)
-      c++;
-   if (c == SYSSND_MIXCHANNELS)
-      c = -1;
+   /* Reuse the channel this sound is already playing on if there is one,
+    * otherwise take the first free channel.
+    *
+    * NOTE the bound must be tested before channel[c] is dereferenced. The
+    * previous form tested it last, so the scan read channel[SYSSND_MIXCHANNELS]
+    * - one element past the array - whenever every channel was busy. */
+   c = -1;
+   for (i = 0; i < SYSSND_MIXCHANNELS; i++)
+   {
+      if (channel[i].loop != 0 && channel[i].snd == sound)
+      {
+         c = i;   /* already playing: restart it in place */
+         break;
+      }
+      if (channel[i].loop == 0 && c < 0)
+         c = i;   /* remember the first free slot, keep looking for a match */
+   }
 
    if (c >= 0)
    {
@@ -204,8 +222,13 @@ syssnd_pause(U8 pause, U8 clear)
 
    if (clear == TRUE)
    {
+      /* clear the snd/buf mirrors too: leaving them set behind a zeroed loop
+       * count leaves dangling pointers into sounds that may since be freed */
       for (c = 0; c < SYSSND_MIXCHANNELS; c++)
-         channel[c].loop = 0;
+         if (channel[c].snd)
+            end_channel(c);
+         else
+            channel[c].loop = 0;
    }
 }
 
@@ -214,7 +237,7 @@ syssnd_pause(U8 pause, U8 clear)
  */
 void syssnd_stopchan(S8 chan)
 {
-   if (chan < 0 || chan > SYSSND_MIXCHANNELS)
+   if (chan < 0 || chan >= SYSSND_MIXCHANNELS)
       return;
 
    if (channel[chan].snd)
