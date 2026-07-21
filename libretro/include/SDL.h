@@ -23,7 +23,8 @@ extern int Reset_Warm(void);
 #include <SDL_types.h>
 
 #define SDL_SRCCOLORKEY 0x1
-#define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
+/* r: 5 bits, g: 6 bits, b: 5 bits */
+#define RGB565(r, g, b)  (((r) << 11) | ((g) << 5) | (b))
 extern int Retro_SetPalette(SDL_Surface * surface, int flags, const SDL_Color * colors,int firstcolor, int ncolors);
 extern unsigned int Retro_MapRGB(SDL_PixelFormat *a, int r, int g, int b);
 extern long GetTicks(void);

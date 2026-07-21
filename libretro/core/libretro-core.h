@@ -29,6 +29,7 @@ extern char Key_Sate2[512];
 
 #define LOGI printf
 
-#define RGB565(r, g, b)  (((r) << (5+6)) | ((g) << 6) | (b))
+/* r: 5 bits, g: 6 bits, b: 5 bits */
+#define RGB565(r, g, b)  (((r) << 11) | ((g) << 5) | (b))
 
 #endif
