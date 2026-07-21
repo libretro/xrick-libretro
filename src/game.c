@@ -635,13 +635,19 @@ game_run(void)
 
 void game_iterate(void)
 {
-   /* video */
+   /* Advance first, then present what it drew.
+    *
+    * This used to run sysvid_update() before frame(), so the rectangles it
+    * consumed were the ones the *previous* call had produced and the frame
+    * handed to the frontend was always one behind the simulation - 40ms of
+    * latency at 25fps, for nothing. It also meant sysvid_update() walked the
+    * entity rectangle list across a retro_run() boundary, while frame() was
+    * free to rebuild it. */
+   frame();
+
    /*DEBUG*//*game_rects=&draw_SCREENRECT;*//*DEBUG*/
    sysvid_update(game_rects);
    draw_STATUSRECT.next = NULL;  /* FIXME freerects should handle this */
-
-   /* frame */
-   frame();
 }
 
 /*
