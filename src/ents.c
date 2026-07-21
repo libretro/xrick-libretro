@@ -510,6 +510,12 @@ void ents_reset(void)
 {
   memset(ent_ents, 0, sizeof(ent_ents));
   ent_ch3 = FALSE;
+
+  /* Every walk over the list in this file terminates on n == 0xff, and
+   * nothing ever writes that value - it arrives via the marks as the list is
+   * built. A cleared list therefore has no terminator, and any walk before
+   * the list is rebuilt runs off the end of the array. */
+  ent_ents[ENT_ENTSNUM].n = 0xff;
 }
 
 void ents_serialize(serial_t *s)
