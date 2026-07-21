@@ -335,6 +335,41 @@ draw_sprite(U8 number, U16 x, U16 y)
  *
  * NOTE re-using original ST graphics format
  */
+
+/*
+ * Tile flags for the map cell covering a screen column.
+ *
+ * x in draw_sprite2() is unsigned, so a sprite hanging off the left edge of
+ * the screen arrives as a large value - 65532 for four pixels off - rather
+ * than a small negative one. (x + c) >> 3 then lands thousands of columns
+ * past the end of a 32 column row of map_map. That is a read of unrelated
+ * memory, not a wrap into the next row: map_map is 44 * 32 bytes in total.
+ * UBSan, on the default GFXST build:
+ *
+ *   src/draw.c: index 8195 out of bounds for type 'U8 [32]'
+ *   src/draw.c: load of address ... with insufficient space for an object
+ *               of type 'U8'
+ *
+ * The flag decides foreground occlusion, so this is not a harmless overread.
+ * Instrumenting the old code over a 1200 frame scripted run: the column is
+ * out of bounds 420 times, and 2352 pixels that reach the frame buffer take
+ * their occlusion decision from whatever happened to be at that address.
+ * Which pixels those are depends on static layout, so it is not reproducible
+ * across toolchains.
+ *
+ * Doing the arithmetic on a signed x yields the column the caller meant, and
+ * the clamp covers positions genuinely off the map.
+ */
+static U8 draw_mapflg(U16 y, S16 col)
+{
+  if (col < 0)
+    col = 0;
+  else if (col > 0x1f)
+    col = 0x1f;
+
+  return map_eflg[map_map[y >> 3][col]];
+}
+
 #ifdef GFXST
 void
 draw_sprite2(U8 number, U16 x, U16 y, U8 front)
@@ -364,14 +399,14 @@ draw_sprite2(U8 number, U16 x, U16 y, U8 front)
 
     i = 0x1f;
     im = x - (x & 0xfff8);
-    flg = map_eflg[map_map[(y + r) >> 3][(x + 0x1f)>> 3]];
+    flg = draw_mapflg((U16)(y + r), (S16)(((S16)x + 0x1f) >> 3));
 
 #ifdef ENABLE_CHEATS
 #define LOOP(N, C0, C1) \
     d = sprites_data[number][g + N]; \
     for (c = C0; c >= C1; c--, i--, d >>= 4, im--) { \
       if (im == 0) { \
-	flg = map_eflg[map_map[(y + r) >> 3][(x + c) >> 3]]; \
+	flg = draw_mapflg((U16)(y + r), (S16)(((S16)x + c) >> 3)); \
 	im = 8; \
       } \
       if (c >= w || x + c < x0) continue; \
@@ -384,7 +419,7 @@ draw_sprite2(U8 number, U16 x, U16 y, U8 front)
     d = sprites_data[number][g + N]; \
     for (c = C0; c >= C1; c--, i--, d >>= 4, im--) { \
       if (im == 0) { \
-	flg = map_eflg[map_map[(y + r) >> 3][(x + c) >> 3]]; \
+	flg = draw_mapflg((U16)(y + r), (S16)(((S16)x + c) >> 3)); \
 	im = 8; \
       } \
       if (!front && (flg & MAP_EFLG_FGND)) continue; \
