@@ -5,6 +5,7 @@ INCFLAGS   :=  -I$(CORE_DIR)/include \
 	       -I$(CORE_DIR)/include/compat \
 	       -I$(CORE_DIR)/src \
 	       -I$(CORE_DIR)/libretro \
+	       -I$(CORE_DIR)/libretro/core \
 	       -I$(CORE_DIR)/libretro/sdl_wrapp \
 	       -I$(CORE_DIR)/libretro/include \
 	       -I$(LIBRETRO_COMM_DIR)/include

@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL.h>
+#include "libretro-core.h"
 
 #include "system.h"
 #include "game.h"
@@ -27,8 +27,18 @@
 
 U8 *sysvid_fb = NULL; /* frame buffer */
 
-static SDL_Color palette[256];
-static SDL_Surface *screen = NULL;
+/* the palette, pre-packed into the frontend's pixel format */
+static PIXEL_TYPE palette[256];
+
+/*
+ * The 8bpp shadow of what is currently on screen.
+ *
+ * This is not the same thing as sysvid_fb: it only ever receives the parts of
+ * sysvid_fb that a rectangle marked dirty, so anywhere the game draws without
+ * declaring a rectangle the two disagree. The expansion has to be driven from
+ * the shadow to keep the output identical to the old full frame blit.
+ */
+static U8 *shadow = NULL;
 
 #include "img_icon.e"
 
@@ -73,17 +83,45 @@ static U8 BLUE[] = { 0x00, 0x00, 0x68, 0x68,
                      0x80, 0x98, 0xb0, 0xc8};
 #endif
 
+/*
+ * Pack one palette entry into a frontend pixel.
+ */
+static PIXEL_TYPE sysvid_pack(U8 r, U8 g, U8 b)
+{
+#ifdef FRONTEND_SUPPORTS_RGB565
+   return (PIXEL_TYPE)RGB565(r >> 3, g >> 2, b >> 3);
+#else
+   return ((PIXEL_TYPE)r << 16) | ((PIXEL_TYPE)g << 8) | (PIXEL_TYPE)b;
+#endif
+}
+
 void sysvid_setPalette(img_color_t *pal, U16 n)
 {
-   U16 i;
+   U16 i, x, y;
+   const U8 *p;
+   PIXEL_TYPE *q;
 
    for (i = 0; i < n; i++)
+      palette[i] = sysvid_pack(pal[i].r, pal[i].g, pal[i].b);
+
+   /* The palette is baked into the pixels as they are expanded, so changing
+    * it invalidates every pixel already in the frontend buffer, including
+    * ones no rectangle will mark dirty. Repaint from the shadow. The old code
+    * got this for free by re-expanding the whole surface every frame; here it
+    * costs one pass per palette change, and the palette changes twice over a
+    * 1200 frame run. */
+   if (!shadow)
+      return;
+
+   p = shadow;
+   q = Retro_Screen;
+   for (y = 0; y < SYSVID_HEIGHT; y++)
    {
-      palette[i].r = pal[i].r;
-      palette[i].g = pal[i].g;
-      palette[i].b = pal[i].b;
+      for (x = 0; x < SYSVID_WIDTH; x++)
+         q[x] = palette[p[x]];
+      p += SYSVID_WIDTH;
+      q += WINDOW_WIDTH;
    }
-   SDL_SetPalette(screen,0, (SDL_Color *)&palette, 0, n);
 }
 
 void sysvid_setGamePalette(void)
@@ -105,8 +143,9 @@ void sysvid_setGamePalette(void)
  */
 void sysvid_init(void)
 {
-   /* video modes and screen */
-   screen     = SDL_CreateRGBSurface( SDL_HWSURFACE | SDL_HWPALETTE, SYSVID_WIDTH, SYSVID_HEIGHT, 8 , 0x00ff0000,0x0000ff00,0xff,0xff000000);
+   /* the 8bpp shadow of the visible screen; starts blank, as the surface it
+    * replaces did (it was calloc'd) */
+   shadow = calloc(1, SYSVID_WIDTH * SYSVID_HEIGHT);
 
    /*
     * create v_ frame buffer
@@ -123,52 +162,62 @@ void sysvid_shutdown(void)
       free(sysvid_fb);
    sysvid_fb = NULL;
 
-   if (screen)
-      SDL_FreeSurface(screen);
-   screen = NULL;
-}
+   if (shadow)
+      free(shadow);
+   shadow = NULL;
 
-extern SDL_Surface *sdlscrn; 
-
-void blit(void)
-{
-   SDL_BlitSurface(screen, NULL, sdlscrn, NULL);
+   memset(palette, 0, sizeof(palette));
 }
 
 /*
  * Update screen
  * NOTE errors processing ?
  */
+/*
+ * Update the visible screen from the frame buffer.
+ *
+ * The dirty rectangles used to drive an 8 to 8 copy into a second surface,
+ * and blit() then expanded that entire surface into the frontend buffer once
+ * per frame regardless of what had changed - so the rectangle list narrowed
+ * only the cheap half of the work and the palette expansion always ran over
+ * the full 320x200. The expansion now happens here, over the dirty
+ * rectangles, and blit() is gone.
+ */
 void sysvid_update(rect_t *rects)
 {
    U16 x, y;
-   U8 *p, *q, *p0, *q0;
+   const U8 *p, *p0;
+   U8 *s, *s0;
+   PIXEL_TYPE *q, *q0;
 
-   if (!rects)
+   if (!rects || !shadow)
       return;
 
    while (rects)
    {
-      p0  = sysvid_fb;
-      p0 += rects->x + rects->y * SYSVID_WIDTH;
-      q0  = (U8 *)screen->pixels;
-      q0 += (rects->x + rects->y * SYSVID_WIDTH);
+      p0 = sysvid_fb    + rects->x + rects->y * SYSVID_WIDTH;
+      s0 = shadow       + rects->x + rects->y * SYSVID_WIDTH;
+      q0 = Retro_Screen + rects->x + rects->y * WINDOW_WIDTH;
 
-      for (y = rects->y; y < rects->y + rects->height; y++)
+      for (y = 0; y < rects->height; y++)
       {
          p = p0;
+         s = s0;
          q = q0;
-         for (x = rects->x; x < rects->x + rects->width; x++)
+         for (x = 0; x < rects->width; x++)
          {
-            *q = *p;
+            *s = *p;
+            *q = palette[*p];
+            s++;
             q++;
             p++;
          }
-         q0 += SYSVID_WIDTH;
          p0 += SYSVID_WIDTH;
+         s0 += SYSVID_WIDTH;
+         q0 += WINDOW_WIDTH;
       }
 
-      rects  = rects->next;
+      rects = rects->next;
    }
 }
 
