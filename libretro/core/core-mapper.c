@@ -1,8 +1,7 @@
 #include "libretro.h"
 #include "libretro-core.h"
-#include "sdl_primitives.h"
 
-#include "SDL.h"
+
  
 //TIME
 #ifdef __PS3__
@@ -105,11 +104,9 @@ long GetTicks(void)
 #endif
 } 
 
-extern void SDL_Uninit(void);
-
 void texture_uninit(void)
 {
-   SDL_Uninit();
+   memset(Retro_Screen, 0, sizeof(Retro_Screen));
 }
 
 void texture_init(void)
@@ -121,35 +118,35 @@ static void retro_key_down(unsigned short key)
 {
    switch (key)
    {
-      case SDLK_UP:
+      case XRICK_KEY_UP:
          SETBIT(control_status, CONTROL_UP);
          control_last = CONTROL_UP;
          break;
-      case SDLK_DOWN:
+      case XRICK_KEY_DOWN:
          SETBIT(control_status, CONTROL_DOWN);
          control_last = CONTROL_DOWN;
          break;
-      case SDLK_LEFT:
+      case XRICK_KEY_LEFT:
          SETBIT(control_status, CONTROL_LEFT);
          control_last = CONTROL_LEFT;
          break;
-      case SDLK_RIGHT:
+      case XRICK_KEY_RIGHT:
          SETBIT(control_status, CONTROL_RIGHT);
          control_last = CONTROL_RIGHT;
          break;
-      case SDLK_p:
+      case XRICK_KEY_PAUSE:
          SETBIT(control_status, CONTROL_PAUSE);
          control_last = CONTROL_PAUSE;
          break;
-      case SDLK_e:
+      case XRICK_KEY_END:
          SETBIT(control_status, CONTROL_END);
          control_last = CONTROL_END;
          break;
-      case SDLK_ESCAPE:
+      case XRICK_KEY_ESCAPE:
          SETBIT(control_status, CONTROL_EXIT);
          control_last = CONTROL_EXIT;
          break;
-      case SDLK_SPACE:
+      case XRICK_KEY_SPACE:
          SETBIT(control_status, CONTROL_FIRE);
          control_last = CONTROL_FIRE;
          break;
@@ -160,42 +157,42 @@ static void retro_key_up(unsigned short key)
 {
    switch (key)
    {
-      case SDLK_UP:
+      case XRICK_KEY_UP:
          CLRBIT(control_status, CONTROL_UP);
          control_last = CONTROL_UP;
          break;
-      case SDLK_DOWN:
+      case XRICK_KEY_DOWN:
          CLRBIT(control_status, CONTROL_DOWN);
          control_last = CONTROL_DOWN;
          break;
-      case SDLK_LEFT:
+      case XRICK_KEY_LEFT:
          CLRBIT(control_status, CONTROL_LEFT);
          control_last = CONTROL_LEFT;
          break;
-      case SDLK_RIGHT:
+      case XRICK_KEY_RIGHT:
          CLRBIT(control_status, CONTROL_RIGHT);
          control_last = CONTROL_RIGHT;
          break;
-      case SDLK_p:
+      case XRICK_KEY_PAUSE:
          CLRBIT(control_status, CONTROL_PAUSE);
          control_last = CONTROL_PAUSE;
          break;
-      case SDLK_e:
+      case XRICK_KEY_END:
          CLRBIT(control_status, CONTROL_END);
          control_last = CONTROL_END;
          break;
-      case SDLK_ESCAPE:
+      case XRICK_KEY_ESCAPE:
          CLRBIT(control_status, CONTROL_EXIT);
          control_last = CONTROL_EXIT;
          break;
-      case SDLK_SPACE:
+      case XRICK_KEY_SPACE:
          CLRBIT(control_status, CONTROL_FIRE);
          control_last = CONTROL_FIRE;
          break;
    }
 }
 
-#include "sdl-wrapper.c"
+
 
 int SurfaceFormat=3;
 
@@ -249,23 +246,23 @@ int Retro_PollEvent(void)
        (game_state == GAMEOVER) ||
        (game_state == GETNAME))
    {
-      key           = SDLK_UP;
+      key           = XRICK_KEY_UP;
       Key_Sate[key] = joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_UP) ? 0x80: 0;
       key_latch(key);
 
-      key           = SDLK_DOWN;
+      key           = XRICK_KEY_DOWN;
       Key_Sate[key] = joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN) ? 0x80: 0;
       key_latch(key);
 
-      key           = SDLK_LEFT;
+      key           = XRICK_KEY_LEFT;
       Key_Sate[key] = joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT) ? 0x80: 0;
       key_latch(key);
 
-      key           = SDLK_RIGHT;
+      key           = XRICK_KEY_RIGHT;
       Key_Sate[key] = joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) ? 0x80: 0;
       key_latch(key);
 
-      key           = SDLK_SPACE;
+      key           = XRICK_KEY_SPACE;
       Key_Sate[key] = (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_A)) ||
                       (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_B)) ||
                       (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_Y)) ||
@@ -289,7 +286,7 @@ int Retro_PollEvent(void)
     * Up is ignored when:
     * - 'Set Dynamite' is pressed
     * - 'Jab Stick' is pressed */
-   key           = SDLK_UP;
+   key           = XRICK_KEY_UP;
    Key_Sate[key] = (jump_pressed ||
                     (fire_gun_pressed && fire_gun_pressed_prev) ||
                     (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_UP))) &&
@@ -303,7 +300,7 @@ int Retro_PollEvent(void)
     * - 'Jump' is pressed
     * - 'Fire Gun' is pressed
     * - 'Jab Stick' is pressed */
-   key           = SDLK_DOWN;
+   key           = XRICK_KEY_DOWN;
    Key_Sate[key] = ((set_dynamite_pressed && set_dynamite_pressed_prev) ||
                     (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))) &&
                    !(jump_pressed || fire_gun_pressed || jab_stick_pressed) ? 0x80: 0;
@@ -314,7 +311,7 @@ int Retro_PollEvent(void)
     * Left is ignored when:
     * - 'Fire Gun' is pressed
     * - 'Set Dynamite' is pressed */
-   key           = SDLK_LEFT;
+   key           = XRICK_KEY_LEFT;
    Key_Sate[key] = (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)) &&
                    !(fire_gun_pressed || set_dynamite_pressed) ? 0x80: 0;
    key_latch(key);
@@ -324,7 +321,7 @@ int Retro_PollEvent(void)
     * Right is ignored when:
     * - 'Fire Gun' is pressed
     * - 'Set Dynamite' is pressed */
-   key           = SDLK_RIGHT;
+   key           = XRICK_KEY_RIGHT;
    Key_Sate[key] = (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)) &&
                    !(fire_gun_pressed || set_dynamite_pressed) ? 0x80: 0;
    key_latch(key);
@@ -335,7 +332,7 @@ int Retro_PollEvent(void)
     * - 'Jab Stick' is pressed
     * Fire is ignored when:
     * - 'Jump' is pressed */
-   key           = SDLK_SPACE;
+   key           = XRICK_KEY_SPACE;
    Key_Sate[key] = (fire_gun_pressed ||
                     set_dynamite_pressed ||
                     jab_stick_pressed) &&
@@ -343,7 +340,7 @@ int Retro_PollEvent(void)
    key_latch(key);
 
    /* Pause */
-   key           = SDLK_p;
+   key           = XRICK_KEY_PAUSE;
    Key_Sate[key] = joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_START) ? 0x80: 0;
    key_latch(key);
 

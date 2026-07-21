@@ -9,14 +9,14 @@
 #include "data.h"
 #include <retro_endianness.h>
 
-#define SDL_MIX_MAXVOLUME 128
+#define SYSSND_MIXVOLUME 128   /* full scale for the internal volume */
 
-#define ADJVOL(S) (((S)*sndVol)/SDL_MIX_MAXVOLUME)
+#define ADJVOL(S) (((S)*sndVol)/SYSSND_MIXVOLUME)
 
 static U8 isAudioActive = FALSE;
 static channel_t channel[SYSSND_MIXCHANNELS];
 
-static U8 sndVol = SDL_MIX_MAXVOLUME;  /* internal volume */
+static U8 sndVol = SYSSND_MIXVOLUME;  /* internal volume */
 static U8 sndUVol = SYSSND_MAXVOL;  /* user-selected volume */
 static U8 sndMute = FALSE;  /* mute flag */
 static void end_channel(U8);
@@ -31,7 +31,7 @@ static void end_channel(U8);
  *
  * The mix accumulator is S32 and the user volume is applied once, to the
  * summed result. It used to be applied per channel, to the 8 bit sample,
- * with an integer divide by SDL_MIX_MAXVOLUME - so every active channel
+ * with an integer divide by SYSSND_MIXVOLUME - so every active channel
  * contributed its own rounding error before the sum. At full volume the
  * divide is exact and this is bit identical; below full volume it is simply
  * more accurate.
@@ -86,7 +86,7 @@ void syssnd_mix(S16 *stream, int frames)
          acc = 0;
       else
       {
-         acc = (acc * (S32)sndVol) / SDL_MIX_MAXVOLUME;
+         acc = (acc * (S32)sndVol) / SYSSND_MIXVOLUME;
          if (acc >  127) acc =  127;
          if (acc < -128) acc = -128;
       }
@@ -120,7 +120,7 @@ void syssnd_init(void)
    if (sysarg_args_vol != 0)
    {
       sndUVol = sysarg_args_vol;
-      sndVol = SDL_MIX_MAXVOLUME * sndUVol / SYSSND_MAXVOL;
+      sndVol = SYSSND_MIXVOLUME * sndUVol / SYSSND_MAXVOL;
    }
 
    for (c = 0; c < SYSSND_MIXCHANNELS; c++)
@@ -164,7 +164,7 @@ void syssnd_vol(S8 d)
          (d > 0 && sndUVol < SYSSND_MAXVOL))
    {
       sndUVol += d;
-      sndVol = SDL_MIX_MAXVOLUME * sndUVol / SYSSND_MAXVOL;
+      sndVol = SYSSND_MIXVOLUME * sndUVol / SYSSND_MAXVOL;
    }
 }
 

@@ -54,30 +54,6 @@ static bool retro_crop_borders = false;
 static char RPATH[1024];
 static char RETRO_DIR[1024];
 
-SDL_Surface *sdlscrn; 
-
-void SDL_Uninit(void)
-{
-   if (sdlscrn)
-   {
-      if(sdlscrn->format)	
-      {
-         if(sdlscrn->format->palette)	
-         {
-            if(sdlscrn->format->palette->colors)	
-               free(sdlscrn->format->palette->colors);
-            free(sdlscrn->format->palette);
-         }
-         free(sdlscrn->format);
-      }
-
-      if(sdlscrn->pixels)
-         sdlscrn->pixels=NULL;
-
-      free(sdlscrn);
-      sdlscrn = NULL;
-   }
-}
 
 #include "cmdline.c"
 
@@ -314,15 +290,12 @@ void retro_run(void)
    syssnd_mix(audio_buf, XRICK_SAMPLES_PER_FRAME);
    audio_batch_cb(audio_buf, XRICK_SAMPLES_PER_FRAME);
 
-   if (sdlscrn)
-   {
-      if (retro_crop_borders)
-         video_cb((unsigned char *)sdlscrn->pixels + (VIDEO_OFFSET_X * BPP),
-               VIDEO_WIDTH, retroh, retrow << PIXEL_BYTES);
-      else
-         video_cb((unsigned char *)sdlscrn->pixels,
-               retrow, retroh, retrow << PIXEL_BYTES);
-   }
+   if (retro_crop_borders)
+      video_cb((unsigned char *)Retro_Screen + (VIDEO_OFFSET_X * BPP),
+            VIDEO_WIDTH, retroh, retrow << PIXEL_BYTES);
+   else
+      video_cb((unsigned char *)Retro_Screen,
+            retrow, retroh, retrow << PIXEL_BYTES);
 }
 
 bool retro_load_game(const struct retro_game_info *info)
@@ -378,13 +351,7 @@ bool retro_load_game(const struct retro_game_info *info)
       snprintf(RPATH, sizeof(RPATH), "\"xrick\" \"-data\" \"%s/xrick/data.zip\"", RETRO_DIR);
    }
 
-#ifdef FRONTEND_SUPPORTS_RGB565
-   memset(Retro_Screen, 0, WINDOW_WIDTH * WINDOW_HEIGHT * 2);
-   sdlscrn = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 16, 0);
-#else
-   memset(Retro_Screen, 0, WINDOW_WIDTH * WINDOW_HEIGHT * 2 * 2);
-   sdlscrn = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32, 0);
-#endif
+   memset(Retro_Screen, 0, sizeof(Retro_Screen));
 
    update_variables(true);
 
@@ -398,8 +365,6 @@ bool retro_load_game(const struct retro_game_info *info)
    return true;
 
 error:
-   if (sdlscrn)
-      SDL_Uninit();
    return false;
 }
 
@@ -416,10 +381,6 @@ void retro_unload_game(void)
    /* game_rects points into the list just freed; leaving it set means the
     * next session's first sysvid_update() walks freed memory */
    game_rects = NULL;
-
-   /* retro_load_game() assigns sdlscrn unconditionally, so failing to
-    * release it here leaks the surface on every load */
-   SDL_Uninit();
 }
 
 unsigned retro_get_region(void)

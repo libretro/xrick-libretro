@@ -6,8 +6,6 @@ INCFLAGS   :=  -I$(CORE_DIR)/include \
 	       -I$(CORE_DIR)/src \
 	       -I$(CORE_DIR)/libretro \
 	       -I$(CORE_DIR)/libretro/core \
-	       -I$(CORE_DIR)/libretro/sdl_wrapp \
-	       -I$(CORE_DIR)/libretro/include \
 	       -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_C := \
@@ -49,7 +47,6 @@ SOURCES_C := \
 	$(CORE_DIR)/src/sysarg.c \
 	$(CORE_DIR)/src/dat_snd.c \
 	$(CORE_DIR)/libretro/core/soundplay.c \
-	$(CORE_DIR)/libretro/sdl_wrapp/sdl_primitives.c \
 	$(CORE_DIR)/libretro/core/libretro-core.c \
 	$(CORE_DIR)/libretro/core/core-mapper.c
 
