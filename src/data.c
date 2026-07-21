@@ -77,7 +77,9 @@ static char *str_dup(char *s)
 {
 	int i    = strlen(s) + 1;
 	char *s1 = malloc(i);
-	strncpy(s1, s, i);
+	if (!s1)
+		return NULL;
+	memcpy(s1, s, i);
 	return s1;
 }
 
@@ -99,10 +101,16 @@ int data_setpath(char *name)
 {
    unzFile zip;
 
+   /* may be called again without an intervening data_closepath() */
+   data_closepath();
+
    if (str_zipext(name))
    {
       /* path has .zip extension */
-      char *n   = str_slash(str_dup(name));
+      char *n   = str_dup(name);
+      if (!n)
+         return -1;
+      str_slash(n);
       zip       = unzOpen(n);
       if (!zip)
       {
@@ -119,6 +127,8 @@ int data_setpath(char *name)
       /* FIXME check that it is a valid directory */
       path.zip  = NULL;
       path.name = str_dup(name);
+      if (!path.name)
+         return -1;
    }
 
    return 0;
@@ -149,28 +159,37 @@ data_file_t *data_file_open(char *name)
 
    if (path.zip)
    {
-      z       = malloc(sizeof(zipped_t));
-      z->name = strdup(name);
+      z = malloc(sizeof(zipped_t));
+      if (!z)
+         return NULL;
+      z->name = str_dup(name);
       z->zip  = unzDup(path.zip);
-      if (  unzLocateFile(z->zip, name, 0) != UNZ_OK ||
+      if (  !z->name || !z->zip ||
+            unzLocateFile(z->zip, name, 0) != UNZ_OK ||
             unzOpenCurrentFile(z->zip)     != UNZ_OK)
       {
-         unzClose(z->zip);
-         z = NULL;
+         if (z->zip)
+            unzClose(z->zip);
+         free(z->name);   /* the handle and its name were leaked here */
+         free(z);
+         return NULL;
       }
       return (data_file_t *)z;
    }
 
    n = malloc(strlen(path.name) + strlen(name) + 2);
+   if (!n)
+      return NULL;
    sprintf(n, "%s/%s", path.name, name);
    str_slash(n);
    fh = rfopen(n, "rb");
+   free(n);   /* rfopen() does not take ownership of the path */
    return (data_file_t *)fh;
 }
 
 int data_file_size(data_file_t *file)
 {
-   int s;
+   int s = 0;   /* was returned uninitialised on the zip path */
    if (!path.zip)
    {
       rfseek((RFILE *)file, 0, SEEK_END);

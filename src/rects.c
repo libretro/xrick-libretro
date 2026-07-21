@@ -40,6 +40,8 @@ rects_new(U16 x, U16 y, U16 width, U16 height, rect_t *next)
   rect_t *r;
 
   r = malloc(sizeof *r);
+  if (!r)
+    return next;
   r->x = x;
   r->y = y;
   r->width = width;

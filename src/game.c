@@ -735,29 +735,30 @@ void freedata(void)
 {
 #ifdef ENABLE_SOUND
 	syssnd_stopall();
-	syssnd_free(WAV_GAMEOVER);
-	syssnd_free(WAV_SBONUS2);
-	syssnd_free(WAV_BULLET);
-	syssnd_free(WAV_BOMBSHHT);
-	syssnd_free(WAV_EXPLODE);
-	syssnd_free(WAV_STICK);
-	syssnd_free(WAV_WALK);
-	syssnd_free(WAV_CRAWL);
-	syssnd_free(WAV_JUMP);
-	syssnd_free(WAV_PAD);
-	syssnd_free(WAV_BOX);
-	syssnd_free(WAV_BONUS);
-	syssnd_free(WAV_SBONUS1);
-	syssnd_free(WAV_DIE);
-	syssnd_free(WAV_ENTITY[0]);
-	syssnd_free(WAV_ENTITY[1]);
-	syssnd_free(WAV_ENTITY[2]);
-	syssnd_free(WAV_ENTITY[3]);
-	syssnd_free(WAV_ENTITY[4]);
-	syssnd_free(WAV_ENTITY[5]);
-	syssnd_free(WAV_ENTITY[6]);
-	syssnd_free(WAV_ENTITY[7]);
-	syssnd_free(WAV_ENTITY[8]);
+	music_snd = NULL;   /* stopall() may already have disposed of it */
+	syssnd_free(WAV_GAMEOVER); WAV_GAMEOVER = NULL;
+	syssnd_free(WAV_SBONUS2); WAV_SBONUS2 = NULL;
+	syssnd_free(WAV_BULLET); WAV_BULLET = NULL;
+	syssnd_free(WAV_BOMBSHHT); WAV_BOMBSHHT = NULL;
+	syssnd_free(WAV_EXPLODE); WAV_EXPLODE = NULL;
+	syssnd_free(WAV_STICK); WAV_STICK = NULL;
+	syssnd_free(WAV_WALK); WAV_WALK = NULL;
+	syssnd_free(WAV_CRAWL); WAV_CRAWL = NULL;
+	syssnd_free(WAV_JUMP); WAV_JUMP = NULL;
+	syssnd_free(WAV_PAD); WAV_PAD = NULL;
+	syssnd_free(WAV_BOX); WAV_BOX = NULL;
+	syssnd_free(WAV_BONUS); WAV_BONUS = NULL;
+	syssnd_free(WAV_SBONUS1); WAV_SBONUS1 = NULL;
+	syssnd_free(WAV_DIE); WAV_DIE = NULL;
+	syssnd_free(WAV_ENTITY[0]); WAV_ENTITY[0] = NULL;
+	syssnd_free(WAV_ENTITY[1]); WAV_ENTITY[1] = NULL;
+	syssnd_free(WAV_ENTITY[2]); WAV_ENTITY[2] = NULL;
+	syssnd_free(WAV_ENTITY[3]); WAV_ENTITY[3] = NULL;
+	syssnd_free(WAV_ENTITY[4]); WAV_ENTITY[4] = NULL;
+	syssnd_free(WAV_ENTITY[5]); WAV_ENTITY[5] = NULL;
+	syssnd_free(WAV_ENTITY[6]); WAV_ENTITY[6] = NULL;
+	syssnd_free(WAV_ENTITY[7]); WAV_ENTITY[7] = NULL;
+	syssnd_free(WAV_ENTITY[8]); WAV_ENTITY[8] = NULL;
 #endif
 }
 

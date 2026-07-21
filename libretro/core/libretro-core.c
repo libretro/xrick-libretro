@@ -398,7 +398,14 @@ void retro_unload_game(void)
    sys_shutdown();
 
    rects_free(ent_rects);
-   ent_rects = NULL;
+   ent_rects  = NULL;
+   /* game_rects points into the list just freed; leaving it set means the
+    * next session's first sysvid_update() walks freed memory */
+   game_rects = NULL;
+
+   /* retro_load_game() assigns sdlscrn unconditionally, so failing to
+    * release it here leaks the surface on every load */
+   SDL_Uninit();
 }
 
 unsigned retro_get_region(void)
