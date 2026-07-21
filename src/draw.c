@@ -395,7 +395,11 @@ draw_sprite2(U8 number, U16 x, U16 y, U8 front)
   draw_setfb(x0 - DRAW_XYMAP_SCRLEFT, y0 - DRAW_XYMAP_SCRTOP + 8);
 
   for (r = 0; r < 0x15; r++) {
-    if (r >= h || y + r < y0) continue;
+    /* y and x are unsigned, so a sprite hanging off the top or left of the
+     * screen arrives as a large value rather than a small negative one. The
+     * clip tests below have to be done in signed arithmetic, or 'y + r < y0'
+     * becomes '65533 < 0' and never fires. */
+    if (r >= h || (S16)y + r < y0) continue;
 
     i = 0x1f;
     im = x - (x & 0xfff8);
@@ -409,7 +413,7 @@ draw_sprite2(U8 number, U16 x, U16 y, U8 front)
 	flg = draw_mapflg((U16)(y + r), (S16)(((S16)x + c) >> 3)); \
 	im = 8; \
       } \
-      if (c >= w || x + c < x0) continue; \
+      if (c >= w || (S16)x + c < x0) continue; \
       if (!front && !game_cheat3 && (flg & MAP_EFLG_FGND)) continue; \
       if (d & 0x0F) fb[i] = (fb[i] & 0xF0) | (d & 0x0F); \
       if (game_cheat3) fb[i] |= 0x10; \
@@ -423,7 +427,7 @@ draw_sprite2(U8 number, U16 x, U16 y, U8 front)
 	im = 8; \
       } \
       if (!front && (flg & MAP_EFLG_FGND)) continue; \
-      if (c >= w || x + c < x0) continue; \
+      if (c >= w || (S16)x + c < x0) continue; \
       if (d & 0x0F) fb[i] = (fb[i] & 0xF0) | (d & 0x0F); \
     }
 #endif
