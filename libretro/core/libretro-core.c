@@ -9,6 +9,7 @@
 
 #include "libretro-core.h"
 #include "state.h"
+#include "sysvid.h"
 #include "libretro_core_options.h"
 
 #include "game.h"
@@ -149,7 +150,20 @@ static void update_variables(bool startup)
       retro_cheat_pending = true;
 }
 
-void retro_reset(void) { }
+static int16_t audio_buf[XRICK_SAMPLES_PER_FRAME * 2];
+
+void retro_reset(void)
+{
+   /* Back to the state retro_load_game() leaves behind, without reloading
+    * the data files - a reset is not a reload. game_resetState() establishes
+    * the same game_state and game_period that game_run() does. */
+   game_resetState();
+   input_reset();
+   sysvid_reset();
+
+   memset(audio_buf, 0, sizeof(audio_buf));
+   syssnd_stopall();
+}
 
 void StartTicks(void);
 
@@ -256,8 +270,8 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 
 extern int Retro_PollEvent(void);
 extern void syssnd_mix(int16_t *stream, int frames);
+extern void syssnd_stopall(void);
 
-static int16_t audio_buf[XRICK_SAMPLES_PER_FRAME * 2];
 
 void retro_run(void)
 {

@@ -21,6 +21,8 @@ extern U8 *sysvid_fb;  /* frame buffer */
 
 extern void sysvid_serialize(serial_t *s);
 
+extern void sysvid_reset(void);
+
 #endif
 
 /* eof */

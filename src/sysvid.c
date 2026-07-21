@@ -159,7 +159,7 @@ void sysvid_init(void)
    /*
     * create v_ frame buffer
     */
-   sysvid_fb = malloc(SYSVID_WIDTH * SYSVID_HEIGHT);
+   sysvid_fb = calloc(1, SYSVID_WIDTH * SYSVID_HEIGHT);
 }
 
 /*
@@ -261,6 +261,21 @@ static void sysvid_repaint(void)
       p += SYSVID_WIDTH;
       q += WINDOW_WIDTH;
    }
+}
+
+/*
+ * Return the video layer to the state a fresh load leaves it in.
+ */
+void sysvid_reset(void)
+{
+   if (sysvid_fb)
+      memset(sysvid_fb, 0, SYSVID_WIDTH * SYSVID_HEIGHT);
+   if (shadow)
+      memset(shadow, 0, SYSVID_WIDTH * SYSVID_HEIGHT);
+
+   memset(palette,      0, sizeof(palette));
+   memset(palette_rgb,  0, sizeof(palette_rgb));
+   memset(Retro_Screen, 0, sizeof(Retro_Screen));
 }
 
 void sysvid_serialize(serial_t *s)

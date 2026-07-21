@@ -771,8 +771,13 @@ void freedata(void)
  */
 void game_resetState(void)
 {
-  game_state    = INTRO_MAIN;
-  game_period   = 0;
+  /* The same starting point game_run() establishes. This used to set
+   * INTRO_MAIN, which is three states further on - past the splash and past
+   * INIT_GAME. It went unnoticed because game_run() runs immediately after
+   * this on the load path and overwrites it, so the wrong value was dead
+   * code there; any other caller got a session that skipped initialisation. */
+  game_state    = XRICK;
+  game_period   = sysarg_args_period ? sysarg_args_period : GAME_PERIOD;
   game_waitevt  = FALSE;
   game_lives    = 0;
   game_bombs    = 0;
