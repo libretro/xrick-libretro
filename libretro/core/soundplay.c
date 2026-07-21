@@ -11,7 +11,6 @@
 
 #define SYSSND_MIXVOLUME 128   /* full scale for the internal volume */
 
-#define ADJVOL(S) (((S)*sndVol)/SYSSND_MIXVOLUME)
 
 static U8 isAudioActive = FALSE;
 static channel_t channel[SYSSND_MIXCHANNELS];
