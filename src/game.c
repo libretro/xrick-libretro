@@ -23,6 +23,8 @@
 #include "e_rick.h"
 #include "e_sbonus.h"
 #include "e_them.h"
+#include "e_bomb.h"
+#include "e_bullet.h"
 #include "screens.h"
 #include "rects.h"
 #include "scroller.h"

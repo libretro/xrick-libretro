@@ -36,8 +36,6 @@
 typedef enum {
 #ifdef ENABLE_DEVTOOLS
   DEVTOOLS,
-extern void game_resetState(void);
-
 #endif
   XRICK,
   INIT_GAME, INIT_BUFFER,
@@ -105,6 +103,8 @@ extern sound_t *WAV_SBONUS1;
 extern sound_t *WAV_DIE;
 extern sound_t *WAV_ENTITY[];
 #endif
+
+extern void game_resetState(void);
 
 #endif
 
