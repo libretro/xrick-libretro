@@ -36,9 +36,6 @@ uint16_t Retro_Screen[WINDOW_WIDTH*WINDOW_HEIGHT];
 uint32_t Retro_Screen[WINDOW_WIDTH*WINDOW_HEIGHT];
 #endif
 
-//EMU FLAGS
-int SND; //SOUND ON/OFF
-
 //KEYBOARD
 char Key_Sate[512];
 char Key_Sate2[512];

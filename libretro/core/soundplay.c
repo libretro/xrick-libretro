@@ -22,31 +22,42 @@ static U8 sndMute = FALSE;  /* mute flag */
 static void end_channel(U8);
 
 #include "libretro.h"
-extern  retro_audio_sample_t audio_cb;
 
 /*
- * Callback -- this is also where all sound mixing is done
+ * Mix one video frame's worth of audio into a stereo S16 buffer.
  *
- * Note: it may not be that much a good idea to do all the mixing here ; it
- * may be more efficient to mix samples every frame, or maybe everytime a
- * new sound is sent to be played. I don't know.
+ * stream: interleaved L/R, must hold frames * 2 samples
+ * frames: number of sample frames to produce
+ *
+ * The mix accumulator is S32 and the user volume is applied once, to the
+ * summed result. It used to be applied per channel, to the 8 bit sample,
+ * with an integer divide by SDL_MIX_MAXVOLUME - so every active channel
+ * contributed its own rounding error before the sum. At full volume the
+ * divide is exact and this is bit identical; below full volume it is simply
+ * more accurate.
+ *
+ * The accumulator is deliberately still clamped to the signed 8 bit window
+ * before being scaled up. That clip point is the original mixer's behaviour
+ * and part of how the game sounds when several effects overlap; widening it
+ * would change the output, not just its precision.
  */
-void syssnd_callback(U8 *stream, int len)
+void syssnd_mix(S16 *stream, int frames)
 {
    U8 c;
+   S32 acc;
    S16 s;
-   U32 i;
+   int i;
 
-   for (i = 0; i < (U32)len; i++)
+   for (i = 0; i < frames; i++)
    {
-      s = 0;
+      acc = 0;
       for (c = 0; c < SYSSND_MIXCHANNELS; c++)
       {
          if (channel[c].loop != 0)
          {  /* channel is active */
             if (channel[c].len > 0)
             {  /* not ending */
-               s += ADJVOL(*channel[c].buf - 0x80);
+               acc += (S32)(*channel[c].buf) - 0x80;
                channel[c].buf++;
                channel[c].len--;
             }
@@ -59,7 +70,7 @@ void syssnd_callback(U8 *stream, int len)
                {  /* just loop */
                   channel[c].buf = channel[c].snd->buf;
                   channel[c].len = channel[c].snd->len;
-                  s += ADJVOL(*channel[c].buf - 0x80);
+                  acc += (S32)(*channel[c].buf) - 0x80;
                   channel[c].buf++;
                   channel[c].len--;
                }
@@ -72,21 +83,21 @@ void syssnd_callback(U8 *stream, int len)
       }
 
       if (sndMute)
-      {
-         s = 0;
-      }
+         acc = 0;
       else
       {
-         s += 0x80;
-         if (s > 0xff)
-            s = 0xff;
-         if (s < 0x00)
-            s = 0x00;
+         acc = (acc * (S32)sndVol) / SDL_MIX_MAXVOLUME;
+         if (acc >  127) acc =  127;
+         if (acc < -128) acc = -128;
       }
-      s = (s - 128) << 8;
-      audio_cb(s,s);
-   }
 
+      /* multiply rather than shift: the operand is signed and the old
+       * '(s - 128) << 8' was undefined whenever the sample went negative */
+      s = (S16)(acc * 256);
+
+      stream[i * 2]     = s;
+      stream[i * 2 + 1] = s;
+   }
 }
 
 

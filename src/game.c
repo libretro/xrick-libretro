@@ -633,9 +633,7 @@ game_run(void)
 	game_state  = XRICK;
 }
 
-extern int SND;
 extern void blit(void);
-extern void syssnd_callback(U8 *stream, int len);
 
 void game_iterate(void)
 {
@@ -643,11 +641,6 @@ void game_iterate(void)
    /*DEBUG*//*game_rects=&draw_SCREENRECT;*//*DEBUG*/
    sysvid_update(game_rects);
    draw_STATUSRECT.next = NULL;  /* FIXME freerects should handle this */
-
-   /* sound */
-   if(SND==1)
-      syssnd_callback(NULL,441*2);			
-   /*snd_mix();*/
 
    /* frame */
    frame();

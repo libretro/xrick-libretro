@@ -17,6 +17,12 @@
 #define VIDEO_WIDTH 256
 #define VIDEO_OFFSET_X ((WINDOW_WIDTH - VIDEO_WIDTH) >> 1)
 
+#define XRICK_FPS         25
+#define XRICK_SAMPLE_RATE 22050
+/* 22050 / 25 divides exactly, so every frame carries the same number of
+ * samples and the core never has to drift or accumulate a remainder */
+#define XRICK_SAMPLES_PER_FRAME (XRICK_SAMPLE_RATE / XRICK_FPS)
+
 int retrow=320; 
 int retroh=200;
 #ifdef FRONTEND_SUPPORTS_RGB565
@@ -45,7 +51,6 @@ static bool retro_cheat_pending = false;
 
 static bool retro_crop_borders = false;
 
-extern int SND;
 static char RPATH[1024];
 static char RETRO_DIR[1024];
 
@@ -80,7 +85,7 @@ extern void texture_init(void);
 extern void texture_uninit(void);
 
 static retro_video_refresh_t video_cb;
-retro_audio_sample_t audio_cb;
+static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
 static retro_environment_t environ_cb;
 
@@ -237,8 +242,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    memset(info, 0, sizeof(*info));
 
-   info->timing.fps               = 25.0;
-   info->timing.sample_rate       = 22050.0;
+   info->timing.fps               = (double)XRICK_FPS;
+   info->timing.sample_rate       = (double)XRICK_SAMPLE_RATE;
 
    if (retro_crop_borders)
    {
@@ -273,7 +278,9 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 }
 
 extern int Retro_PollEvent(void);
-extern void syssnd_callback(U8 *stream, int len);
+extern void syssnd_mix(int16_t *stream, int frames);
+
+static int16_t audio_buf[XRICK_SAMPLES_PER_FRAME * 2];
 
 void retro_run(void)
 {
@@ -300,6 +307,12 @@ void retro_run(void)
    Retro_PollEvent();
 
    game_iterate();
+
+   /* One video frame, one batch of audio. Submitted unconditionally: the
+    * old 'if (SND == 1)' gate meant a disabled mixer produced zero samples
+    * for the frame, which starves the frontend rather than playing silence. */
+   syssnd_mix(audio_buf, XRICK_SAMPLES_PER_FRAME);
+   audio_batch_cb(audio_buf, XRICK_SAMPLES_PER_FRAME);
 
    if (sdlscrn)
    {
@@ -375,7 +388,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    update_variables(true);
 
-   SND=1;
+   memset(audio_buf, 0, sizeof(audio_buf));
+
    if (pre_main(RPATH) == -1)
       goto error;
 
