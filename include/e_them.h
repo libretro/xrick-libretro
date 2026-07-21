@@ -24,6 +24,8 @@ extern void e_them_t2_action(U8);
 extern void e_them_t3_action(U8);
 extern void e_them_z_action(U8);
 
+extern void e_them_reset(void);
+
 #endif
 
 /* eof */

@@ -36,6 +36,8 @@
 typedef enum {
 #ifdef ENABLE_DEVTOOLS
   DEVTOOLS,
+extern void game_resetState(void);
+
 #endif
   XRICK,
   INIT_GAME, INIT_BUFFER,

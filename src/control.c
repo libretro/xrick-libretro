@@ -19,6 +19,16 @@ U8 control_status = 0;
 U8 control_last = 0;
 U8 control_active = TRUE;
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void control_reset(void)
+{
+  control_status = 0;
+  control_last   = 0;
+  control_active = TRUE;
+}
+
 /* eof */
 
 

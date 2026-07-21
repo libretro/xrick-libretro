@@ -680,4 +680,17 @@ draw_img(img_t *i)
 }
 
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void draw_reset(void)
+{
+  draw_tllst     = NULL;
+  draw_tilesBank = 0;
+  fb             = NULL;
+#ifdef GFXPC
+  draw_filter    = 0xffff;
+#endif
+}
+
 /* eof */

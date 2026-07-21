@@ -289,6 +289,19 @@ init(void)
   spnum = 0; /* NOTE spnum in [8728] is never initialized ? */
 }
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void scr_imap_reset(void)
+{
+  step = count = run = 0;
+  flipflop = 0;
+  spnum = 0;
+  spx = spdx = spy = spdy = 0;
+  spbase = spoffs = 0;
+  seq = 0;
+}
+
 /* eof */
 
 

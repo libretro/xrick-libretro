@@ -145,6 +145,8 @@ extern void map_init(void);
 extern U8 map_chain(void);
 extern void map_resetMarks(void);
 
+extern void maps_reset(void);
+
 #endif
 
 /* eof */

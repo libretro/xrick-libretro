@@ -148,6 +148,17 @@ e_bomb_action(UNUSED(U8 e))
 	}
 }
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void e_bomb_reset(void)
+{
+  e_bomb_lethal = 0;
+  e_bomb_xc     = 0;
+  e_bomb_yc     = 0;
+  e_bomb_ticker = 0;
+}
+
 /* eof */
 
 

@@ -357,6 +357,8 @@ bool retro_load_game(const struct retro_game_info *info)
 
    memset(audio_buf, 0, sizeof(audio_buf));
 
+   game_resetState();
+
    if (pre_main(RPATH) == -1)
       goto error;
 

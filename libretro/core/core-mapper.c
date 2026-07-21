@@ -112,6 +112,8 @@ void texture_uninit(void)
 void texture_init(void)
 {
    memset(Retro_Screen, 0, sizeof(Retro_Screen));
+   memset(Key_Sate,  0, sizeof(Key_Sate));
+   memset(Key_Sate2, 0, sizeof(Key_Sate2));
 }
 
 static void retro_key_down(unsigned short key)

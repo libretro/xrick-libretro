@@ -260,4 +260,14 @@ name_draw(void)
 }
 
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void scr_getname_reset(void)
+{
+  seq = 0;
+  x = y = p = 0;
+  memset(name, 0, sizeof(name));
+}
+
 /* eof */

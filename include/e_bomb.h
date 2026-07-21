@@ -29,6 +29,8 @@ extern U8 e_bomb_hit(U8);
 extern void e_bomb_init(U16, U16);
 extern void e_bomb_action(U8);
 
+extern void e_bomb_reset(void);
+
 #endif
 
 /* eof */

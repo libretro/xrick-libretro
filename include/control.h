@@ -27,6 +27,8 @@ extern U8 control_status;
 extern U8 control_last;
 extern U8 control_active;
 
+extern void control_reset(void);
+
 #endif
 
 /* eof */

@@ -26,14 +26,30 @@
  *
  * return: SCREEN_RUNNING, SCREEN_DONE, SCREEN_EXIT
  */
+static U8 seq = 0;
+static U8 seen = 0;
+static U8 first = TRUE;
+static U8 period = 0;
+static U32 tm = 0;
+
+/*
+ * Reset to the state a fresh session expects.
+ *
+ * 'first' in particular only ever went TRUE once per process, so the intro
+ * behaved differently on the very first load than on every load after it.
+ */
+void scr_imain_reset(void)
+{
+  seq    = 0;
+  seen   = 0;
+  first  = TRUE;
+  period = 0;
+  tm     = 0;
+}
+
 U8
 screen_introMain(void)
 {
-  static U8 seq = 0;
-  static U8 seen = 0;
-  static U8 first = TRUE;
-  static U8 period = 0;
-  static U32 tm = 0;
 	U8 i, s[32];
 
   if (seq == 0) {

@@ -26,11 +26,21 @@
  *
  * return: SCREEN_RUNNING, SCREEN_DONE, SCREEN_EXIT
  */
+static U8 seq = 0;
+static U8 wait = 0;
+
+/*
+ * Reset to the state a fresh session expects.
+ */
+void scr_xrick_reset(void)
+{
+	seq  = 0;
+	wait = 0;
+}
+
 U8
 screen_xrick(void)
 {
-	static U8 seq = 0;
-	static U8 wait = 0;
 
 	if (seq == 0) {
 		sysvid_clear();

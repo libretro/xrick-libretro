@@ -563,4 +563,23 @@ void e_rick_restore(void)
 
 
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void e_rick_reset(void)
+{
+  e_rick_stop_x = 0;
+  e_rick_stop_y = 0;
+  e_rick_state  = 0;
+  scrawl        = 0;
+  trigger       = FALSE;
+  offsx         = 0;
+  ylow          = 0;
+  offsy         = 0;
+  seq           = 0;
+  save_crawl    = 0;
+  save_x        = 0;
+  save_y        = 0;
+}
+
 /* eof */

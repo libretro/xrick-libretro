@@ -716,6 +716,18 @@ e_them_t3_action(U8 e)
   }
 }
 
+/*
+ * Reset to the state a fresh session expects.
+ *
+ * e_them_rndseed is incremented once per frame and never wrapped in practice,
+ * so carrying it across a load makes every session play out differently.
+ */
+void e_them_reset(void)
+{
+  e_them_rndseed = 0;
+  e_them_rndnbr  = 0;
+}
+
 /* eof */
 
 

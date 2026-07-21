@@ -22,6 +22,8 @@
 extern U8 scroll_up(void);
 extern U8 scroll_down(void);
 
+extern void scroller_reset(void);
+
 #endif
 
 /* eof */

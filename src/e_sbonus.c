@@ -84,6 +84,16 @@ e_sbonus_stop(U8 e)
 	}
 }
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void e_sbonus_reset(void)
+{
+  e_sbonus_counting = FALSE;
+  e_sbonus_counter  = 0;
+  e_sbonus_bonus    = 0;
+}
+
 /* eof */
 
 

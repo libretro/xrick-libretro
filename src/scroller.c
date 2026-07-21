@@ -154,4 +154,12 @@ scroll_down(void)
   return SCROLL_RUNNING;
 }
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void scroller_reset(void)
+{
+  period = 0;
+}
+
 /* eof */

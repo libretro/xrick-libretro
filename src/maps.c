@@ -28,6 +28,7 @@
  * to map_map.
  */
 
+#include <string.h>
 #include "system.h"
 #include "game.h"
 #include "maps.h"
@@ -182,5 +183,15 @@ map_resetMarks(void)
     map_marks[i].ent &= ~MAP_MARK_NACT;
 }
 
+
+/*
+ * Reset to the state a fresh session expects.
+ */
+void maps_reset(void)
+{
+  memset(map_map, 0, sizeof(map_map));
+  memset(map_eflg, 0, sizeof(map_eflg));
+  map_frow = 0;
+}
 
 /* eof */

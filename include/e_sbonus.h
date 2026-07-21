@@ -23,6 +23,8 @@ extern U16 e_sbonus_bonus;
 extern void e_sbonus_start(U8);
 extern void e_sbonus_stop(U8);
 
+extern void e_sbonus_reset(void);
+
 #endif
 
 /* eof */

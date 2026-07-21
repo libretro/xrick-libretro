@@ -45,6 +45,11 @@ extern U8 screen_gameover(void);  /* gameover */
 extern U8 screen_getname(void);  /* enter you name */
 extern void screen_pause(U8);  /* pause indicator */
 
+extern void scr_xrick_reset(void);
+extern void scr_imain_reset(void);
+extern void scr_getname_reset(void);
+extern void scr_imap_reset(void);
+
 #endif
 
 /* eof */

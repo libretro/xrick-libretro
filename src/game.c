@@ -752,4 +752,50 @@ void freedata(void)
 #endif
 }
 
+/*
+ * Reset every piece of session state to what a fresh load expects.
+ *
+ * Called from retro_load_game(). The core keeps all of this in globals and
+ * file statics, which on a statically linked target live for the lifetime of
+ * the host application, so without this a second load starts from wherever
+ * the first one stopped.
+ */
+void game_resetState(void)
+{
+  game_state    = INTRO_MAIN;
+  game_period   = 0;
+  game_waitevt  = FALSE;
+  game_lives    = 0;
+  game_bombs    = 0;
+  game_bullets  = 0;
+  game_score    = 0;
+  game_map      = 0;
+  game_submap   = 0;
+  game_dir      = 0;
+  game_chsm     = FALSE;
+  game_cheat1   = 0;
+  game_cheat2   = 0;
+  game_cheat3   = 0;
+  game_rects    = NULL;
+  isave_frow    = 0;
+  music_snd     = NULL;
+
+  control_reset();
+  draw_reset();
+  ents_reset();
+  /* map_marks is a static table that play mutates in place (MAP_MARK_NACT) */
+  map_resetMarks();
+  maps_reset();
+  scroller_reset();
+  scr_xrick_reset();
+  scr_imain_reset();
+  scr_getname_reset();
+  scr_imap_reset();
+  e_rick_reset();
+  e_them_reset();
+  e_bomb_reset();
+  e_bullet_reset();
+  e_sbonus_reset();
+}
+
 /* eof */

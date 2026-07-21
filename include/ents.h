@@ -108,6 +108,8 @@ extern void ent_draw(void);
 extern void ent_clprev(void);
 extern void ent_action(void);
 
+extern void ents_reset(void);
+
 #endif
 
 /* eof */

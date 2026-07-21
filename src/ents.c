@@ -11,6 +11,7 @@
  * You must not remove this notice, or any other, from this software.
  */
 
+#include <string.h>
 #include <stdlib.h>
 
 #include "system.h"
@@ -500,5 +501,13 @@ ent_action(void)
   }
 }
 
+
+/*
+ * Reset to the state a fresh session expects.
+ */
+void ents_reset(void)
+{
+  memset(ent_ents, 0, sizeof(ent_ents));
+}
 
 /* eof */

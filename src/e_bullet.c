@@ -75,6 +75,16 @@ e_bullet_action(UNUSED(U8 e))
 }
 
 
+/*
+ * Reset to the state a fresh session expects.
+ */
+void e_bullet_reset(void)
+{
+  e_bullet_offsx = 0;
+  e_bullet_xc    = 0;
+  e_bullet_yc    = 0;
+}
+
 /* eof */
 
 
