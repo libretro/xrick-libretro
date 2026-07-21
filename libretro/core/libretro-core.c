@@ -53,7 +53,9 @@ static bool retro_cheat_pending = false;
 
 static bool retro_crop_borders = false;
 
-static char RPATH[1024];
+/* big enough for RETRO_DIR plus the fixed argument text around it, so the
+ * command line can never be silently truncated */
+static char RPATH[1024 + 64];
 static char RETRO_DIR[1024];
 
 
@@ -434,7 +436,12 @@ bool retro_load_game(const struct retro_game_info *info)
          goto error;
       }
 
-      snprintf(RPATH, sizeof(RPATH), "\"xrick\" \"-data\" \"%s/xrick/data.zip\"", RETRO_DIR);
+      {
+         int n = snprintf(RPATH, sizeof(RPATH),
+               "\"xrick\" \"-data\" \"%s/xrick/data.zip\"", RETRO_DIR);
+         if (n < 0 || (size_t)n >= sizeof(RPATH))
+            goto error;   /* system directory path too long to use */
+      }
    }
 
    memset(Retro_Screen, 0, sizeof(Retro_Screen));
