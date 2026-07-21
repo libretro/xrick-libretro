@@ -12,7 +12,6 @@
  */
 
 #include <stdlib.h>
-#include <signal.h>
 
 #include "system.h"
 
@@ -22,31 +21,41 @@ extern long GetTicks(void);
 /*
  * Return number of microseconds elapsed since first call
  */
+static U32 sys_ticks_base = 0;
+
 U32 sys_gettime(void)
 {
-  static U32 ticks_base = 0;
-  U32 ticks             = GetTicks();
+  U32 ticks = GetTicks();
 
-  if (!ticks_base)
-    ticks_base = ticks;
+  if (!sys_ticks_base)
+    sys_ticks_base = ticks;
 
-  return ticks - ticks_base;
+  return ticks - sys_ticks_base;
 }
 
 /*
  * Initialize system
+ *
+ * ret: 0 on success, -1 on failure
+ *
+ * NOTE no atexit() and no signal() here. This is a libretro core: atexit()
+ * handlers registered from a dlopen()ed object are left dangling once the
+ * frontend dlclose()s us, and hijacking SIGINT/SIGTERM steals them from the
+ * host application.
  */
-void sys_init(int argc, char **argv)
+int sys_init(int argc, char **argv)
 {
-	sysarg_init(argc, argv);
+	sys_ticks_base = 0;
+
+	if (sysarg_init(argc, argv) == -1)
+		return -1;
+
 	sysvid_init();
 #ifdef ENABLE_SOUND
 	if (sysarg_args_nosound == 0)
 		syssnd_init();
 #endif
-	atexit(sys_shutdown);
-	signal(SIGINT, exit);
-	signal(SIGTERM, exit);
+	return 0;
 }
 
 /*

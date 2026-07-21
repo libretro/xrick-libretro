@@ -59,7 +59,7 @@ typedef signed int S32;           /* 32 bits signed   */
 /*
  * main section
  */
-extern void sys_init(int, char **);
+extern int sys_init(int, char **);
 extern void sys_shutdown(void);
 extern U32 sys_gettime(void);
 
@@ -116,7 +116,8 @@ extern int sysarg_args_vol;
 #endif
 extern char *sysarg_args_data;
 
-extern void sysarg_init(int, char **);
+extern int sysarg_init(int, char **);
+extern int sysarg_fail(char *);
 
 #endif
 

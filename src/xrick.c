@@ -17,7 +17,8 @@
 /* main */
 int skel_main(int argc, char *argv[])
 {
-   sys_init(argc, argv);
+   if (sys_init(argc, argv) == -1)
+      return -1;
    if (sysarg_args_data)
       return data_setpath(sysarg_args_data);
    return data_setpath("data.zip");

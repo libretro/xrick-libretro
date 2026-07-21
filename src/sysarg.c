@@ -39,49 +39,64 @@ char *sysarg_args_data = NULL;
 
 /*
  * Fail
+ *
+ * NOTE never call exit() from here: this is library code running inside a
+ * libretro frontend, and terminating the host process is not an option.
+ * Returns -1 so callers can propagate the failure up to retro_load_game().
  */
-void
+int
 sysarg_fail(char *msg)
 {
-	exit(1);
+	(void)msg;
+	return -1;
 }
 
 /*
  * Read and process arguments
+ *
+ * ret: 0 on success, -1 on failure
  */
-void
+int
 sysarg_init(int argc, char **argv)
 {
   int i;
 
+  /* reset to defaults: this may be called more than once per process */
+  sysarg_args_period = 0;
+  sysarg_args_map = 0;
+  sysarg_args_submap = 0;
+  sysarg_args_nosound = 0;
+  sysarg_args_vol = 0;
+  sysarg_args_data = NULL;
+
   for (i = 1; i < argc; i++) {
 
     if (!strcmp(argv[i], "-speed")) {
-      if (++i == argc) sysarg_fail("missing speed value");
+      if (++i == argc) return sysarg_fail("missing speed value");
       sysarg_args_period = atoi(argv[i]) - 1;
       if (sysarg_args_period < 0 || sysarg_args_period > 99)
-	sysarg_fail("invalid speed value");
+	return sysarg_fail("invalid speed value");
     }
 
     else if (!strcmp(argv[i], "-map")) {
-      if (++i == argc) sysarg_fail("missing map number");
+      if (++i == argc) return sysarg_fail("missing map number");
       sysarg_args_map = atoi(argv[i]) - 1;
       if (sysarg_args_map < 0 || sysarg_args_map >= MAP_NBR_MAPS-1)
-	sysarg_fail("invalid map number");
+	return sysarg_fail("invalid map number");
     }
 
     else if (!strcmp(argv[i], "-submap")) {
-      if (++i == argc) sysarg_fail("missing submap number");
+      if (++i == argc) return sysarg_fail("missing submap number");
       sysarg_args_submap = atoi(argv[i]) - 1;
       if (sysarg_args_submap < 0 || sysarg_args_submap >= MAP_NBR_SUBMAPS)
-	sysarg_fail("invalid submap number");
+	return sysarg_fail("invalid submap number");
     }
 #ifdef ENABLE_SOUND
     else if (!strcmp(argv[i], "-vol")) {
-      if (++i == argc) sysarg_fail("missing volume");
+      if (++i == argc) return sysarg_fail("missing volume");
       sysarg_args_vol = atoi(argv[i]) - 1;
       if (sysarg_args_submap < 0 || sysarg_args_submap >= SYSSND_MAXVOL)
-	sysarg_fail("invalid volume");
+	return sysarg_fail("invalid volume");
     }
 
     else if (!strcmp(argv[i], "-nosound")) {
@@ -89,12 +104,12 @@ sysarg_init(int argc, char **argv)
     }
 #endif
 	else if (!strcmp(argv[i], "-data")) {
-		if (++i == argc) sysarg_fail("missing data");
+		if (++i == argc) return sysarg_fail("missing data");
 		sysarg_args_data = argv[i];
 	}
 
     else {
-      sysarg_fail("invalid argument(s)");
+      return sysarg_fail("invalid argument(s)");
     }
 
   }
@@ -113,6 +128,7 @@ sysarg_init(int argc, char **argv)
       sysarg_args_submap == 38)
     sysarg_args_submap = 0;
 
+  return 0;
 }
 
 /* eof */

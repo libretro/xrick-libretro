@@ -1,42 +1,53 @@
 #include <ctype.h>
 
-//Args for experimental_cmdline
-static char ARGUV[64][1024];
-static unsigned char ARGUC=0;
+#define CMDLINE_MAX_ARGS   16
+#define CMDLINE_MAX_ARGLEN 1024
 
-// Args for Core
-static char XARGV[64][1024];
-static const char* xargv_cmd[64];
-int PARAMCOUNT=0;
+/* Args for Core */
+static char XARGV[CMDLINE_MAX_ARGS][CMDLINE_MAX_ARGLEN];
+static const char *xargv_cmd[CMDLINE_MAX_ARGS];
+int PARAMCOUNT = 0;
 
-extern int  skel_main(int argc, char *argv[]);
+extern int skel_main(int argc, char *argv[]);
 
-static void Add_Option(const char* option)
+/*
+ * Append one argument.
+ *
+ * len is the number of characters to copy from option; the result is always
+ * NUL terminated. Arguments past CMDLINE_MAX_ARGS are dropped rather than
+ * running off the end of XARGV.
+ */
+static void Add_Option(const char *option, size_t len)
 {
-   static int first=0;
+   if (PARAMCOUNT >= CMDLINE_MAX_ARGS)
+      return;
 
-   if(first==0)
-   {
-      PARAMCOUNT=0;	
-      first++;
-   }
+   if (len >= CMDLINE_MAX_ARGLEN)
+      len = CMDLINE_MAX_ARGLEN - 1;
 
-   sprintf(XARGV[PARAMCOUNT++],"%s\0",option);
+   memcpy(XARGV[PARAMCOUNT], option, len);
+   XARGV[PARAMCOUNT][len] = '\0';
+   PARAMCOUNT++;
 }
 
+/*
+ * Split a command line into arguments, honouring double quotes.
+ *
+ * Writes straight into XARGV via Add_Option: there is no intermediate ARGUV
+ * staging array, so there is no second copy to keep in sync and nothing that
+ * can accumulate across calls.
+ */
 static void parse_cmdline(const char *argv)
 {
-   char *p,*p2,*start_of_word;
-   int c,c2;
-   static char buffer[512*4];
+   const char *p;
+   const char *start_of_word = NULL;
+   int c;
    enum states { DULL, IN_WORD, IN_STRING } state = DULL;
 
-   strcpy(buffer,argv);
-   strcat(buffer," \0");
-
-   for (p = buffer; *p != '\0'; p++)
+   for (p = argv; *p != '\0'; p++)
    {
-      c = (unsigned char) *p; /* convert to unsigned char for is* functions */
+      c = (unsigned char)*p; /* convert to unsigned char for is* functions */
+
       switch (state)
       {
          case DULL: /* not in a word, not in a double quoted string */
@@ -52,58 +63,53 @@ static void parse_cmdline(const char *argv)
             state = IN_WORD;
             start_of_word = p; /* word starts here */
             continue;
+
          case IN_STRING:
             /* we're in a double quoted string, so keep going until we hit a close " */
             if (c == '"')
             {
-               /* word goes from start_of_word to p-1 */
-               //... do something with the word ...
-               for (c2 = 0,p2 = start_of_word; p2 < p; p2++, c2++)
-                  ARGUV[ARGUC][c2] = (unsigned char) *p2;
-               ARGUC++; 
-
+               Add_Option(start_of_word, (size_t)(p - start_of_word));
                state = DULL; /* back to "not in word, not in string" state */
             }
             continue; /* either still IN_STRING or we handled the end above */
+
          case IN_WORD:
             /* we're in a word, so keep going until we get to a space */
             if (isspace(c))
             {
-               /* word goes from start_of_word to p-1 */
-               //... do something with the word ...
-               for (c2 = 0,p2 = start_of_word; p2 <p; p2++,c2++)
-                  ARGUV[ARGUC][c2] = (unsigned char) *p2;
-               ARGUC++; 
-
+               Add_Option(start_of_word, (size_t)(p - start_of_word));
                state = DULL; /* back to "not in word, not in string" state */
             }
             continue; /* either still IN_WORD or we handled the end above */
-      }	
+      }
    }
+
+   /* flush a trailing unterminated word */
+   if (state != DULL && start_of_word)
+      Add_Option(start_of_word, (size_t)(p - start_of_word));
 }
 
 int pre_main(const char *argv)
 {
    int i;
 
-   parse_cmdline(argv); 
-
-   for (i = 0; i<64; i++)
+   /* Reset every time: retro_load_game() may be called more than once per
+    * process, and on statically linked targets these arrays live for the
+    * lifetime of the application. */
+   PARAMCOUNT = 0;
+   for (i = 0; i < CMDLINE_MAX_ARGS; i++)
+   {
+      XARGV[i][0]  = '\0';
       xargv_cmd[i] = NULL;
+   }
 
-   /* Pass all cmdline args */
-   for(i = 0; i < ARGUC; i++)
-      Add_Option(ARGUV[i]);
+   parse_cmdline(argv);
 
    for (i = 0; i < PARAMCOUNT; i++)
-      xargv_cmd[i] = (char*)(XARGV[i]);
+      xargv_cmd[i] = (const char *)XARGV[i];
 
-   if (skel_main(PARAMCOUNT,( char **)xargv_cmd) == -1)
+   if (skel_main(PARAMCOUNT, (char **)xargv_cmd) == -1)
       return -1;
-
-   xargv_cmd[PARAMCOUNT - 2] = NULL;
 
    return 0;
 }
-
-

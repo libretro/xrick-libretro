@@ -85,6 +85,7 @@ static retro_audio_sample_batch_t audio_batch_cb;
 static retro_environment_t environ_cb;
 
 bool libretro_supports_bitmasks = false;
+static bool pixel_format_ok        = false;
 
 void retro_set_environment(retro_environment_t cb)
 {
@@ -188,8 +189,9 @@ void retro_init(void)
    else
       strlcpy(RETRO_DIR, ".", sizeof(RETRO_DIR));
 
-   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
-      exit(0);
+   /* NOTE do not exit() here: failing to negotiate a pixel format is
+    * reported through retro_load_game(), it must not kill the frontend. */
+   pixel_format_ok = environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt);
 
    memset(Key_Sate,0,512);
    memset(Key_Sate2,0,512);
@@ -205,6 +207,7 @@ void retro_deinit(void)
    texture_uninit();
 
    libretro_supports_bitmasks = false;
+   pixel_format_ok            = false;
 
    retro_cheat1 = false;
    retro_cheat2 = false;
@@ -311,6 +314,9 @@ void retro_run(void)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+   if (!pixel_format_ok)
+      return false;
+
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS,
          input_descriptors);
 
