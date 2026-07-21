@@ -333,15 +333,17 @@ e_them_t2_action2(U8 e)
   /*
    * vars required by the Black Magic (tm) performance at the
    * end of this function.
+   *
+   * These used to be file-scope aliases onto e_them_rndseed and onto two
+   * statics, e.g. sh = (U16 *)&e_them_rndseed + 2. e_them_rndseed is a
+   * four byte U32, so scaling that +2 by sizeof(U16) landed four bytes in,
+   * one element past the object. They are now plain locals derived from the
+   * seed by shifting, which is both in bounds and independent of byte order.
    */
-  static U16 bx;
-  static U8 *bl = (U8 *)&bx;
-  static U8 *bh = (U8 *)&bx + 1;
-  static U16 cx;
-  static U8 *cl = (U8 *)&cx;
-  static U8 *ch = (U8 *)&cx + 1;
-  static U16 *sl = (U16 *)&e_them_rndseed;
-  static U16 *sh = (U16 *)&e_them_rndseed + 2;
+  U16 bx, cx;
+  U8 bl, bh, cl, ch;
+  U16 sl = (U16)(e_them_rndseed & 0xffff);
+  U16 sh = (U16)(e_them_rndseed >> 16);
 
   /* latency: if not zero then decrease */
   if (ent_ents[e].latency > 0) ent_ents[e].latency--;
@@ -468,14 +470,19 @@ e_them_t2_action2(U8 e)
 	 * for the entity. it is an exact copy of what the assembler code
 	 * does but I can't explain.
 	 */
-	bx = e_them_rndnbr + *sh + *sl + 0x0d;
-	cx = *sh;
-	*bl ^= *ch;
-	*bl ^= *cl;
-	*bl ^= *bh;
+	bx = (U16)(e_them_rndnbr + sh + sl + 0x0d);
+	bl = (U8)(bx & 0x00ff);
+	bh = (U8)(bx >> 8);
+	cx = sh;
+	cl = (U8)(cx & 0x00ff);
+	ch = (U8)(cx >> 8);
+	bl ^= ch;
+	bl ^= cl;
+	bl ^= bh;   /* bh is the untouched high byte of bx */
+	bx = (U16)((bx & 0xff00) | bl);
 	e_them_rndnbr = bx;
 
-	ent_ents[e].offsx = (*bl & 0x01) ? -0x02 : 0x02;
+	ent_ents[e].offsx = (bl & 0x01) ? -0x02 : 0x02;
 
 	/* back to normal */
 
