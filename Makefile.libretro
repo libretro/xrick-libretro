@@ -225,7 +225,7 @@ else ifeq ($(platform), wiiu)
 	BAKE_IN_ZLIB=1
    CFLAGS += \
 	-DHAVE_ASPRINTF -I$(DEVKITPRO)/libogc/include \
-	-DGEKKO -DWIIU -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
+	-DGEKKO -DWIIU -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -ffunction-sections -fdata-sections -D__wiiu__ -D__wut__
 
    SHARED :=   -lm -lc
 	WANT_ZLIB=1
